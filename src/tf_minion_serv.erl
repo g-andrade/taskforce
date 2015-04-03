@@ -17,6 +17,7 @@
 -ignore_xref([{start_link, 1}]).
 
 
+%% @headerfile "../include/taskforce.hrl"
 -include("include/taskforce.hrl").
 
 -record(task_ref, {

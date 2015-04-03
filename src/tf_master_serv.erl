@@ -16,6 +16,7 @@
 
 -ignore_xref([{start_link, 2}]).
 
+%% @headerfile "../include/taskforce.hrl"
 -include("include/taskforce.hrl").
 
 -type exec_state() :: idle | {running, Bidder::any()}.
