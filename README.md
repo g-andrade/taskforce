@@ -10,6 +10,7 @@ __Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
 
 `taskforce` allows you to parallelise arbitrary tasks in a controlled way.
 
+
 ---------
 
 
@@ -32,13 +33,11 @@ IdentifiedUrls = [{google_homepage, "https://www.google.com/"},
                   {example_image1, "https://assets.crowdsurge.com/datacapture/example/img/example_logo.png"},
                   {example_image2, "http://underthebridge.co.uk/wp-content/uploads/2014/03/Example-main-image1.jpg"},
                   {example_image3, "https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png"}],
-
 IndividualTimeoutT = 2000, % in miliseconds
 GlobalTimeoutT = 10000,    % in miliseconds
 MinionCount = 4,          % 4 workers
 
-Tasks = [taskforce:new_task({download_result, Id}, DownloadFun, [Id, Url], 
-                            IndividualTimeoutT)
+Tasks = [taskforce:new_task({download_result, Id}, DownloadFun, [Id, Url], IndividualTimeoutT)
          || {Id, Url} <- IdentifiedUrls],
 
 {ResultsById, Individualtimeouts, GlobalTimeouts} = taskforce:execute_tasks(
@@ -56,10 +55,7 @@ Tasks = [taskforce:new_task({download_result, Id}, DownloadFun, [Id, Url],
 % {1430,311508,810445} Handled 'google_homepage'
 % {1430,311509,58815} Handled 'example_image3'
 % {1430,311509,447087} Handled 'ip_over_avian_carriers_rfc'
-
-
 lists:keyfind({download_result, hackernews_rss}, 1, ResultsById).
-
 % {{download_result,hackernews_rss},
 %  {{"HTTP/1.1",200,"OK"},
 %   [{"cache-control","private"},
@@ -85,11 +81,11 @@ lists:keyfind({download_result, hackernews_rss}, 1, ResultsById).
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/develop/doc/taskforce.md" class="module">taskforce</a></td></tr>
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/develop/doc/taskforce_app.md" class="module">taskforce_app</a></td></tr>
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/develop/doc/taskforce_sup.md" class="module">taskforce_sup</a></td></tr>
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/develop/doc/tf_master_serv.md" class="module">tf_master_serv</a></td></tr>
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/develop/doc/tf_master_sup.md" class="module">tf_master_sup</a></td></tr>
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/develop/doc/tf_minion_serv.md" class="module">tf_minion_serv</a></td></tr>
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/develop/doc/tf_minion_sup.md" class="module">tf_minion_sup</a></td></tr></table>
+<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/taskforce.md" class="module">taskforce</a></td></tr>
+<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/taskforce_app.md" class="module">taskforce_app</a></td></tr>
+<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/taskforce_sup.md" class="module">taskforce_sup</a></td></tr>
+<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/tf_master_serv.md" class="module">tf_master_serv</a></td></tr>
+<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/tf_master_sup.md" class="module">tf_master_sup</a></td></tr>
+<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/tf_minion_serv.md" class="module">tf_minion_serv</a></td></tr>
+<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/tf_minion_sup.md" class="module">tf_minion_sup</a></td></tr></table>
 

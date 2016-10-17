@@ -5,6 +5,7 @@
 * [Function Details](#functions)
 
 __Behaviours:__ [`gen_server`](gen_server.md).
+
 <a name="index"></a>
 
 ## Function Index ##
@@ -22,14 +23,10 @@ Starts the server.</td></tr></table>
 
 ### start_link/2 ###
 
-
 <pre><code>
 start_link(PatronPid, MaxMinionCount) -&gt; {ok, Pid} | ignore | {error, Error}
 </code></pre>
-
-<br></br>
-
-
+<br />
 
 Starts the server
 

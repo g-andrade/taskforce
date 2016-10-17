@@ -5,6 +5,7 @@
 * [Function Details](#functions)
 
 __Behaviours:__ [`supervisor`](supervisor.md).
+
 <a name="index"></a>
 
 ## Function Index ##
@@ -22,14 +23,10 @@ Starts the supervisor.</td></tr></table>
 
 ### start_link/0 ###
 
-
 <pre><code>
 start_link() -&gt; {ok, Pid} | ignore | {error, Error}
 </code></pre>
-
-<br></br>
-
-
+<br />
 
 Starts the supervisor
 
