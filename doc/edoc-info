@@ -1,4 +1,5 @@
 %% encoding: UTF-8
+{application,taskforce}.
 {packages,[]}.
 {modules,[taskforce,taskforce_app,taskforce_sup,tf_master_serv,tf_master_sup,
           tf_minion_serv,tf_minion_sup]}.
