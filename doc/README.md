@@ -4,13 +4,81 @@
 
 Copyright (c) 2015 Guilherme Andrade
 
-__Version:__ 1.1.0
+__Version:__ 1.2.0
 
 __Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
 
 `taskforce` allows you to parallelise arbitrary tasks in a controlled way.
 
 ---------
+
+
+### <a name="Creating_tasks">Creating tasks</a> ###
+
+
+```erlang
+
+Tasks = #{ some_task => taskforce:task(function work/0, Args, #{ timeout => 2000 }),
+           similar_task => taskforce:task(function work/0, Args123, #{ timeout => 2500 }),
+           other_task => taskforce:task(function other_work/0, OtherArgs, #{ timeout => 500 }) }.
+
+```
+
+
+### <a name="Executing_tasks">Executing tasks</a> ###
+
+
+```erlang
+
+#{ completed := Completed } = taskforce:execute(Tasks),
+SomeTaskResult = maps:get(some_task, Completed),
+SimilarTaskResult = maps:get(similar_task, Completed),
+OtherTaskResult = maps:get(other_task, Completed).
+
+```
+
+
+### <a name="Finely_tuning_execution">Finely tuning execution</a> ###
+
+
+```erlang
+
+ExecutionOptions = #{ max_workers => 8, timeout => 5000 },
+#{ completed := Completed } = taskforce:execute(Tasks, ExecutionOptions),
+% ...
+
+```
+
+
+### <a name="Individual_task_timeouts">Individual task timeouts</a> ###
+
+
+```erlang
+
+% ...
+#{ individual_timeouts := IndividualTimeouts } = taskforce:execute(Tasks),
+(length(IndividualTimeouts) > 0
+ andalso io:format("oh noes! tasks with ids ~p timed-out",
+                   [IndividualTimeouts]))
+
+```
+
+
+### <a name="Global_execution_timeouts">Global execution timeouts</a> ###
+
+
+```erlang
+
+% ...
+#{ global_timeouts := GlobalTimeouts } = taskforce:execute(Tasks),
+(length(GlobalTimeouts) > 0
+ andalso io:format("execution ran out of time; tasks with ids ~p timed-out",
+                   [GlobalTimeouts]))
+
+```
+
+
+### <a name="Full_example">Full example</a> ###
 
 
 ```erlang
@@ -21,32 +89,29 @@ __Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
 % for the whole batch.
 %
 NrOfPrimes = 200,
-IndividualTimeoutT = 2000, % in miliseconds
-GlobalTimeoutT = 10000,    % in miliseconds
-MinionCount = 4,           % 4 workers
 Tasks =
-    [taskforce:new_task({nth,Nth}, fun fancy_lib:find_nth_prime/1,
-                        [Nth], IndividualTimeoutT)
-     || Nth <- lists:seq(1, NrOfPrimes)],
+    maps:from_list(
+        [{Nth, taskforce:task(fun fancy_lib:find_nth_prime/1,
+                              [Nth], #{ timeout => 2000 })}
+         || Nth <- lists:seq(1, NrOfPrimes)]),
 
-{NthPrimes, IndividualTimeouts, GlobalTimeouts} =
-    taskforce:execute_tasks(Tasks, GlobalTimeoutT, MinionCount),
+ExecutionOptions =
+    #{ % default is the sum of all individual task timeouts
+       timeout => 10000,
 
-io:format("200th prime is: ~p~n", [proplists:get_value({nth,200}, NthPrimes)]).
+       % default is number of active schedulers
+       max_workers => 4 },
+
+#{ completed := NthPrimes } = taskforce:execute(Tasks, ExecutionOptions),
+io:format("200th prime is: ~p~n", [maps:get(200, NthPrimes)]).
 
 ```
-
+Also in `examples/`.
 
 
 ## Modules ##
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="taskforce.md" class="module">taskforce</a></td></tr>
-<tr><td><a href="taskforce_app.md" class="module">taskforce_app</a></td></tr>
-<tr><td><a href="taskforce_sup.md" class="module">taskforce_sup</a></td></tr>
-<tr><td><a href="tf_master_serv.md" class="module">tf_master_serv</a></td></tr>
-<tr><td><a href="tf_master_sup.md" class="module">tf_master_sup</a></td></tr>
-<tr><td><a href="tf_minion_serv.md" class="module">tf_minion_serv</a></td></tr>
-<tr><td><a href="tf_minion_sup.md" class="module">tf_minion_sup</a></td></tr></table>
+<tr><td><a href="taskforce.md" class="module">taskforce</a></td></tr></table>
 

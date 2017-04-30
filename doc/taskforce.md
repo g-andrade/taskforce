@@ -12,81 +12,69 @@
 
 
 
-### <a name="type-execution_result">execution_result()</a> ###
+### <a name="type-execution_options">execution_options()</a> ###
 
 
 <pre><code>
-execution_result() = {Completed::<a href="#type-tf_proplist">tf_proplist</a>(<a href="#type-tf_task_id">tf_task_id()</a>, <a href="#type-tf_task_result">tf_task_result()</a>), IndividualTimeouts::[<a href="#type-tf_task_id">tf_task_id()</a>], GlobalTimeouts::[<a href="#type-tf_task_id">tf_task_id()</a>]}
+execution_options() = #{timeout =&gt; pos_integer(), max_workers =&gt; pos_integer()}
 </code></pre>
 
 
 
 
-### <a name="type-tf_fun_args">tf_fun_args()</a> ###
+### <a name="type-result">result()</a> ###
 
 
 <pre><code>
-tf_fun_args() = [any()]
+result() = #{completed =&gt; #{TaskId::term() =&gt; TaskResult::term()}, individual_timeouts =&gt; [TaskId::term()], global_timeouts =&gt; [TaskId::term()]}
 </code></pre>
 
 
 
 
-### <a name="type-tf_fun_ref">tf_fun_ref()</a> ###
+### <a name="type-result">result()</a> ###
 
 
 <pre><code>
-tf_fun_ref() = function()
+result() = #{completed =&gt; #{TaskId::term() =&gt; TaskResult::term()}, individual_timeouts =&gt; [TaskId::term()], global_timeouts =&gt; [TaskId::term()]}
 </code></pre>
 
 
 
 
-### <a name="type-tf_proplist">tf_proplist()</a> ###
+### <a name="type-task">task()</a> ###
+
+
+__abstract datatype__: `task()`
+
+
+
+
+### <a name="type-task_settings">task_settings()</a> ###
 
 
 <pre><code>
-tf_proplist(T1, T2) = [{T1, T2}]
+task_settings() = #{timeout =&gt; pos_integer()}
 </code></pre>
 
 
 
 
-### <a name="type-tf_task">tf_task()</a> ###
+### <a name="type-task_settings">task_settings()</a> ###
 
 
 <pre><code>
-tf_task() = #tf_task{id = <a href="#type-tf_task_id">tf_task_id()</a>, fun_ref = <a href="#type-tf_fun_ref">tf_fun_ref()</a>, args = <a href="#type-tf_fun_args">tf_fun_args()</a>, timeout = <a href="#type-tf_timeout">tf_timeout()</a>}
+task_settings() = #{timeout =&gt; pos_integer()}
 </code></pre>
 
 
 
 
-### <a name="type-tf_task_id">tf_task_id()</a> ###
+### <a name="type-tasks">tasks()</a> ###
 
 
 <pre><code>
-tf_task_id() = any()
-</code></pre>
-
-
-
-
-### <a name="type-tf_task_result">tf_task_result()</a> ###
-
-
-<pre><code>
-tf_task_result() = any()
-</code></pre>
-
-
-
-
-### <a name="type-tf_timeout">tf_timeout()</a> ###
-
-
-<pre><code>
-tf_timeout() = pos_integer()
+tasks() = #{TaskId::term() =&gt; Task::<a href="#type-task">task()</a>}
 </code></pre>
 
 <a name="index"></a>
@@ -94,46 +82,40 @@ tf_timeout() = pos_integer()
 ## Function Index ##
 
 
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#execute_tasks-1">execute_tasks/1</a></td><td></td></tr><tr><td valign="top"><a href="#execute_tasks-2">execute_tasks/2</a></td><td></td></tr><tr><td valign="top"><a href="#execute_tasks-3">execute_tasks/3</a></td><td></td></tr><tr><td valign="top"><a href="#new_task-4">new_task/4</a></td><td></td></tr></table>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#execute-1">execute/1</a></td><td></td></tr><tr><td valign="top"><a href="#execute-2">execute/2</a></td><td></td></tr><tr><td valign="top"><a href="#task-3">task/3</a></td><td></td></tr></table>
 
 
 <a name="functions"></a>
 
 ## Function Details ##
 
-<a name="execute_tasks-1"></a>
+<a name="execute-1"></a>
 
-### execute_tasks/1 ###
-
-<pre><code>
-execute_tasks(Tasks::[<a href="#type-tf_task">tf_task()</a>]) -&gt; <a href="#type-execution_result">execution_result()</a>
-</code></pre>
-<br />
-
-<a name="execute_tasks-2"></a>
-
-### execute_tasks/2 ###
+### execute/1 ###
 
 <pre><code>
-execute_tasks(Tasks::[<a href="#type-tf_task">tf_task()</a>], TotalTimeout::<a href="#type-tf_timeout">tf_timeout()</a>) -&gt; <a href="#type-execution_result">execution_result()</a>
+execute(Tasks) -&gt; Result
 </code></pre>
-<br />
 
-<a name="execute_tasks-3"></a>
+<ul class="definitions"><li><code>Tasks = <a href="#type-tasks">tasks()</a></code></li><li><code>Result = <a href="#type-result">result()</a></code></li></ul>
 
-### execute_tasks/3 ###
+<a name="execute-2"></a>
+
+### execute/2 ###
 
 <pre><code>
-execute_tasks(Tasks::[<a href="#type-tf_task">tf_task()</a>], TotalTimeout::<a href="#type-tf_timeout">tf_timeout()</a>, MaxMinionCount::pos_integer()) -&gt; <a href="#type-execution_result">execution_result()</a>
+execute(Tasks, ExecutionOptions) -&gt; Result
 </code></pre>
-<br />
 
-<a name="new_task-4"></a>
+<ul class="definitions"><li><code>Tasks = <a href="#type-tasks">tasks()</a></code></li><li><code>ExecutionOptions = <a href="#type-execution_options">execution_options()</a></code></li><li><code>Result = <a href="#type-result">result()</a></code></li></ul>
 
-### new_task/4 ###
+<a name="task-3"></a>
+
+### task/3 ###
 
 <pre><code>
-new_task(Id::<a href="#type-tf_task_id">tf_task_id()</a>, FunRef::<a href="#type-tf_fun_ref">tf_fun_ref()</a>, Args::<a href="#type-tf_fun_args">tf_fun_args()</a>, Timeout::<a href="#type-tf_timeout">tf_timeout()</a>) -&gt; <a href="#type-tf_task">tf_task()</a>
+task(Function, Args, TaskSettings) -&gt; Task
 </code></pre>
-<br />
+
+<ul class="definitions"><li><code>Function = function()</code></li><li><code>Args = [term()]</code></li><li><code>TaskSettings = <a href="#type-task_settings">task_settings()</a></code></li><li><code>Task = <a href="#type-task">task()</a></code></li></ul>
 
