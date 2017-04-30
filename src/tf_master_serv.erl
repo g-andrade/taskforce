@@ -26,7 +26,7 @@
         patron_monitor :: reference(),
         max_minion_count :: pos_integer(),
         exec_state = 'idle' :: exec_state(),
-        tasks :: [tf_task()],
+        tasks = [] :: [tf_task()],
         consumed_task_ids = [] :: [any()],
         completed = [] :: [any()],
         timedout_task_ids = [] :: [any()]

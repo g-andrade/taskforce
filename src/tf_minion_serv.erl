@@ -135,7 +135,7 @@ handle_cast({{task_result, TaskTag}, TaskResult},
 ->
     #task_ref{id = TaskId,
               timeout_timer = TimeoutTimer }=TaskRef,
-    erlang:cancel_timer(TimeoutTimer),
+    _ = erlang:cancel_timer(TimeoutTimer),
     MasterPid = State#minion_state.master_pid,
     gen_server:cast(MasterPid, {{task_completed, TaskId}, TaskResult}),
     gen_server:cast(self(), get_task),
