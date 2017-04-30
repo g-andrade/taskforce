@@ -52,10 +52,7 @@ execute_tasks(Tasks, TotalTimeout) ->
 -spec execute_tasks(Tasks::[tf_task()], TotalTimeout::tf_timeout(), MaxMinionCount::pos_integer())
         -> execution_result().
 execute_tasks(Tasks, TotalTimeout, MaxMinionCount) ->
-    {_, ShuffledTasks} = lists:unzip(
-            lists:keysort(1, lists:zip([crypto:rand_uniform(0, 1 bsl 31)
-                                        || _ <- lists:seq(1, length(Tasks))],
-                                       Tasks)) ),
+    ShuffledTasks = shuffle_list(Tasks),
     Bidding = #tf_bidding{tasks = ShuffledTasks,
                           timeout = TotalTimeout},
     {ok, MasterPid} = supervisor:start_child(tf_master_sup, [self(), MaxMinionCount]),
@@ -64,3 +61,17 @@ execute_tasks(Tasks, TotalTimeout, MaxMinionCount) ->
     {BiddingResult#tf_bidding_result.completed,
      BiddingResult#tf_bidding_result.individual_timeouts,
      BiddingResult#tf_bidding_result.global_timeouts}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+shuffle_list(L) ->
+    KeyedL = [{V, rand_small()} || V <- L],
+    SortedKeyedL = lists:keysort(2, KeyedL),
+    [V || {V, _K} <- SortedKeyedL].
+
+-ifdef(pre18).
+rand_small() ->
+    random:uniform(1 bsl 26).
+-else.
+rand_small() ->
+    rand:uniform(1 bsl 26).
+-endif.
