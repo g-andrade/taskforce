@@ -56,7 +56,7 @@ tf_proplist(T1, T2) = [{T1, T2}]
 
 
 <pre><code>
-tf_task() = #tf_task{}
+tf_task() = #tf_task{id = <a href="#type-tf_task_id">tf_task_id()</a>, fun_ref = <a href="#type-tf_fun_ref">tf_fun_ref()</a>, args = <a href="#type-tf_fun_args">tf_fun_args()</a>, timeout = <a href="#type-tf_timeout">tf_timeout()</a>}
 </code></pre>
 
 
