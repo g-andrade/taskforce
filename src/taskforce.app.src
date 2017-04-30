@@ -1,6 +1,6 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
 {application, taskforce,
- [{description, "Simple pools for controlled parallelisation of arbitrary tasks"},
+ [{description, "On-demand worker pools for parallelizable tasks"},
   {vsn, git},
   {registered, []},
   {applications,
