@@ -3,16 +3,17 @@
 
 run() ->
     NrOfPrimes = 1000,
-    IndividualTimeoutT = 2000, % in miliseconds
-    GlobalTimeoutT = 10000,    % in miliseconds
-    MinionCount = 4,           % 4 workers
     Tasks =
-        [taskforce:new_task(Nth, fun find_nth_prime/1, [Nth], IndividualTimeoutT)
-         || Nth <- lists:seq(1, NrOfPrimes)],
+        maps:from_list(
+          [{Nth, taskforce:task(fun find_nth_prime/1, [Nth], #{ timeout => 2000 })}
+           || Nth <- lists:seq(1, NrOfPrimes)]),
 
-    {_NthPrimes, _IndividualTimeouts, _GlobalTimeouts} =
-        taskforce:execute_tasks(Tasks, GlobalTimeoutT, MinionCount).
+    Options = #{ timeout => 10000, max_workers => 4 },
+    Result = taskforce:execute(Tasks, Options),
 
+    #{ completed := _NthPrimesMap,
+       individual_timeouts := _IndividualTimeouts,
+       global_timeouts := _GlobalTimeouts } = Result.
 
 % Brute force approach for demonstration purposes only
 

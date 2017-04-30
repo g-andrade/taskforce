@@ -15,69 +15,62 @@
 
 <h2><a name="types">Data Types</a></h2>
 
-<h3 class="typedecl"><a name="type-execution_result">execution_result()</a></h3>
-<p><tt>execution_result() = {Completed::<a href="#type-tf_proplist">tf_proplist</a>(<a href="#type-tf_task_id">tf_task_id()</a>, <a href="#type-tf_task_result">tf_task_result()</a>), IndividualTimeouts::[<a href="#type-tf_task_id">tf_task_id()</a>], GlobalTimeouts::[<a href="#type-tf_task_id">tf_task_id()</a>]}</tt></p>
+<h3 class="typedecl"><a name="type-execution_options">execution_options()</a></h3>
+<p><tt>execution_options() = #{timeout =&gt; pos_integer(), max_workers =&gt; pos_integer()}</tt></p>
 
 
-<h3 class="typedecl"><a name="type-tf_fun_args">tf_fun_args()</a></h3>
-<p><tt>tf_fun_args() = [any()]</tt></p>
+<h3 class="typedecl"><a name="type-result">result()</a></h3>
+<p><tt>result() = #{completed =&gt; #{TaskId::term() =&gt; TaskResult::term()}, individual_timeouts =&gt; [TaskId::term()], global_timeouts =&gt; [TaskId::term()]}</tt></p>
 
 
-<h3 class="typedecl"><a name="type-tf_fun_ref">tf_fun_ref()</a></h3>
-<p><tt>tf_fun_ref() = function()</tt></p>
+<h3 class="typedecl"><a name="type-result">result()</a></h3>
+<p><tt>result() = #{completed =&gt; #{TaskId::term() =&gt; TaskResult::term()}, individual_timeouts =&gt; [TaskId::term()], global_timeouts =&gt; [TaskId::term()]}</tt></p>
 
 
-<h3 class="typedecl"><a name="type-tf_proplist">tf_proplist()</a></h3>
-<p><tt>tf_proplist(T1, T2) = [{T1, T2}]</tt></p>
+<h3 class="typedecl"><a name="type-task">task()</a></h3>
+<p><b>abstract datatype</b>: <tt>task()</tt></p>
 
 
-<h3 class="typedecl"><a name="type-tf_task">tf_task()</a></h3>
-<p><tt>tf_task() = #tf_task{id = <a href="#type-tf_task_id">tf_task_id()</a>, fun_ref = <a href="#type-tf_fun_ref">tf_fun_ref()</a>, args = <a href="#type-tf_fun_args">tf_fun_args()</a>, timeout = <a href="#type-tf_timeout">tf_timeout()</a>}</tt></p>
+<h3 class="typedecl"><a name="type-task_settings">task_settings()</a></h3>
+<p><tt>task_settings() = #{timeout =&gt; pos_integer()}</tt></p>
 
 
-<h3 class="typedecl"><a name="type-tf_task_id">tf_task_id()</a></h3>
-<p><tt>tf_task_id() = any()</tt></p>
+<h3 class="typedecl"><a name="type-task_settings">task_settings()</a></h3>
+<p><tt>task_settings() = #{timeout =&gt; pos_integer()}</tt></p>
 
 
-<h3 class="typedecl"><a name="type-tf_task_result">tf_task_result()</a></h3>
-<p><tt>tf_task_result() = any()</tt></p>
-
-
-<h3 class="typedecl"><a name="type-tf_timeout">tf_timeout()</a></h3>
-<p><tt>tf_timeout() = pos_integer()</tt></p>
+<h3 class="typedecl"><a name="type-tasks">tasks()</a></h3>
+<p><tt>tasks() = #{TaskId::term() =&gt; Task::<a href="#type-task">task()</a>}</tt></p>
 
 
 <h2><a name="index">Function Index</a></h2>
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#execute_tasks-1">execute_tasks/1</a></td><td></td></tr>
-<tr><td valign="top"><a href="#execute_tasks-2">execute_tasks/2</a></td><td></td></tr>
-<tr><td valign="top"><a href="#execute_tasks-3">execute_tasks/3</a></td><td></td></tr>
-<tr><td valign="top"><a href="#new_task-4">new_task/4</a></td><td></td></tr>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#execute-1">execute/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#execute-2">execute/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#task-3">task/3</a></td><td></td></tr>
 </table>
 
 <h2><a name="functions">Function Details</a></h2>
 
-<h3 class="function"><a name="execute_tasks-1">execute_tasks/1</a></h3>
+<h3 class="function"><a name="execute-1">execute/1</a></h3>
 <div class="spec">
-<p><tt>execute_tasks(Tasks::[<a href="#type-tf_task">tf_task()</a>]) -&gt; <a href="#type-execution_result">execution_result()</a></tt><br></p>
+<p><tt>execute(Tasks) -&gt; Result</tt>
+<ul class="definitions"><li><tt>Tasks = <a href="#type-tasks">tasks()</a></tt></li><li><tt>Result = <a href="#type-result">result()</a></tt></li></ul></p>
 </div>
 
-<h3 class="function"><a name="execute_tasks-2">execute_tasks/2</a></h3>
+<h3 class="function"><a name="execute-2">execute/2</a></h3>
 <div class="spec">
-<p><tt>execute_tasks(Tasks::[<a href="#type-tf_task">tf_task()</a>], TotalTimeout::<a href="#type-tf_timeout">tf_timeout()</a>) -&gt; <a href="#type-execution_result">execution_result()</a></tt><br></p>
+<p><tt>execute(Tasks, ExecutionOptions) -&gt; Result</tt>
+<ul class="definitions"><li><tt>Tasks = <a href="#type-tasks">tasks()</a></tt></li><li><tt>ExecutionOptions = <a href="#type-execution_options">execution_options()</a></tt></li><li><tt>Result = <a href="#type-result">result()</a></tt></li></ul></p>
 </div>
 
-<h3 class="function"><a name="execute_tasks-3">execute_tasks/3</a></h3>
+<h3 class="function"><a name="task-3">task/3</a></h3>
 <div class="spec">
-<p><tt>execute_tasks(Tasks::[<a href="#type-tf_task">tf_task()</a>], TotalTimeout::<a href="#type-tf_timeout">tf_timeout()</a>, MaxMinionCount::pos_integer()) -&gt; <a href="#type-execution_result">execution_result()</a></tt><br></p>
-</div>
-
-<h3 class="function"><a name="new_task-4">new_task/4</a></h3>
-<div class="spec">
-<p><tt>new_task(Id::<a href="#type-tf_task_id">tf_task_id()</a>, FunRef::<a href="#type-tf_fun_ref">tf_fun_ref()</a>, Args::<a href="#type-tf_fun_args">tf_fun_args()</a>, Timeout::<a href="#type-tf_timeout">tf_timeout()</a>) -&gt; <a href="#type-tf_task">tf_task()</a></tt><br></p>
+<p><tt>task(Function, Args, TaskSettings) -&gt; Task</tt>
+<ul class="definitions"><li><tt>Function = function()</tt></li><li><tt>Args = [term()]</tt></li><li><tt>TaskSettings = <a href="#type-task_settings">task_settings()</a></tt></li><li><tt>Task = <a href="#type-task">task()</a></tt></li></ul></p>
 </div>
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, Apr 30 2017, 21:13:05.</i></p>
+<p><i>Generated by EDoc, Apr 30 2017, 22:55:03.</i></p>
 </body>
 </html>

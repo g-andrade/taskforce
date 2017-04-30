@@ -17,6 +17,42 @@ calculate_primes_test() ->
 
     IndividualTimeoutT = 2000, % in miliseconds
     GlobalTimeoutT = 10000,    % in miliseconds
+    MaxWorkers = 4,        % 4 workers
+    Tasks =
+        maps:from_list(
+          [{Nth, taskforce:task(fun find_nth_prime/1, [Nth],
+                                #{ timeout => IndividualTimeoutT })}
+           || Nth <- lists:seq(1, NrOfPrimes)]),
+
+    Result = taskforce:execute(Tasks, #{ timeout => GlobalTimeoutT,
+                                         max_workers => MaxWorkers }),
+
+    #{ completed := NthPrimes,
+       individual_timeouts := IndividualTimeouts,
+       global_timeouts := GlobalTimeouts } = Result,
+
+    ?assertEqual([], IndividualTimeouts),
+    ?assertEqual([], GlobalTimeouts),
+    ?assertEqual(maps:size(NthPrimes), NrOfPrimes),
+
+    lists:foreach(
+      fun ({Nth, Value}) ->
+              {Nth, ExpectedValue} = lists:keyfind(Nth, 1, ExpectedNthPrimes),
+              ?assertEqual(Value, ExpectedValue)
+      end,
+      maps:to_list(NthPrimes)).
+
+
+-spec calculate_primes__old_interface__test() -> ok.
+calculate_primes__old_interface__test() ->
+    application:ensure_all_started(taskforce),
+
+    NrOfPrimes = 200,
+    ExpectedNthPrimes = [{Nth, find_nth_prime_recur(Nth)}
+                         || Nth <- lists:seq(1, 200)],
+
+    IndividualTimeoutT = 2000, % in miliseconds
+    GlobalTimeoutT = 10000,    % in miliseconds
     MinionCount = 4,           % 4 workers
     Tasks =
         [taskforce:new_task(Nth, fun find_nth_prime/1, [Nth], IndividualTimeoutT)
