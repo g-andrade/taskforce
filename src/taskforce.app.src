@@ -1,15 +1,17 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
-{application, taskforce, [
-        {description, "Simple pools for controlled parallelisation of arbitrary tasks."},
-        {vsn, "v1.0.0"},
-        {registered, []},
-        {applications, [
-                kernel,
-                stdlib,
-                crypto
-                ]},
-        {mod, {taskforce_app, [
-                    ]}},
-        {env, [
-                ]}
-        ]}.
+{application, taskforce,
+ [{description, "Simple pools for controlled parallelisation of arbitrary tasks"},
+  {vsn, git},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib,
+    crypto
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, ["Guilherme Andrade"]},
+  {licenses, ["MIT"]},
+  {links, [{"Github", "https://github.com/g-andrade/taskforce"}]}
+ ]}.

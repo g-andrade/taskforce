@@ -1,24 +1,18 @@
+** this is the overview.doc file for the application 'frob' **
 
+@author Guilherme Andrade <g@gandrade.net>
+@copyright 2015 Guilherme Andrade
+@version 1.0.2
+@title taskforce
+@doc `taskforce' allows you to parallelise arbitrary tasks in a controlled way.
 
-# taskforce #
-
-Copyright (c) 2015 Guilherme Andrade
-
-__Version:__ 1.0.0
-
-__Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
-
-`taskforce` allows you to parallelise arbitrary tasks in a controlled way.
----------
-
-
-```erlang
-
+<hr/>
+<pre lang="erlang">
 application:ensure_all_started(taskforce),
 application:ensure_all_started(inets),
 application:ensure_all_started(ssl),
 
-DownloadFun = fun(Id, Url) ->
+DownloadFun = fun(Id, Url) -&gt;
     io:format("~p Trying to download '~p' @ ~p..~n", [os:timestamp(), Id, Url]),
     {ok, Result} = httpc:request(Url),
     io:format("~p Handled '~p'~n", [os:timestamp(), Id]),
@@ -31,12 +25,14 @@ IdentifiedUrls = [{google_homepage, "https://www.google.com/"},
                   {example_image1, "https://assets.crowdsurge.com/datacapture/example/img/example_logo.png"},
                   {example_image2, "http://underthebridge.co.uk/wp-content/uploads/2014/03/Example-main-image1.jpg"},
                   {example_image3, "https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png"}],
+
+
 IndividualTimeoutT = 2000, % in miliseconds
 GlobalTimeoutT = 10000,    % in miliseconds
 MinionCount = 4,          % 4 workers
 
 Tasks = [taskforce:new_task({download_result, Id}, DownloadFun, [Id, Url], IndividualTimeoutT)
-         || {Id, Url} <- IdentifiedUrls],
+         || {Id, Url} &lt;- IdentifiedUrls],
 
 {ResultsById, Individualtimeouts, GlobalTimeouts} = taskforce:execute_tasks(
       Tasks, GlobalTimeoutT, MinionCount).
@@ -53,6 +49,8 @@ Tasks = [taskforce:new_task({download_result, Id}, DownloadFun, [Id, Url], Indiv
 % {1430,311508,810445} Handled 'google_homepage'
 % {1430,311509,58815} Handled 'example_image3'
 % {1430,311509,447087} Handled 'ip_over_avian_carriers_rfc'
+
+
 lists:keyfind({download_result, hackernews_rss}, 1, ResultsById).
 % {{download_result,hackernews_rss},
 %  {{"HTTP/1.1",200,"OK"},
@@ -70,20 +68,4 @@ lists:keyfind({download_result, hackernews_rss}, 1, ResultsById).
 %    {"cf-ray","1deb1a2eba8b0ded-MAD"}],
 %   [60,114,115,115,32,118,101,114,115,105,111,110,61,34,50,46,
 %    48,34,62,60,99,104,97,110|...]}}
-
-```
-
-
-
-## Modules ##
-
-
-<table width="100%" border="0" summary="list of modules">
-<tr><td><a href="taskforce.md" class="module">taskforce</a></td></tr>
-<tr><td><a href="taskforce_app.md" class="module">taskforce_app</a></td></tr>
-<tr><td><a href="taskforce_sup.md" class="module">taskforce_sup</a></td></tr>
-<tr><td><a href="tf_master_serv.md" class="module">tf_master_serv</a></td></tr>
-<tr><td><a href="tf_master_sup.md" class="module">tf_master_sup</a></td></tr>
-<tr><td><a href="tf_minion_serv.md" class="module">tf_minion_serv</a></td></tr>
-<tr><td><a href="tf_minion_sup.md" class="module">tf_minion_sup</a></td></tr></table>
-
+</pre>
