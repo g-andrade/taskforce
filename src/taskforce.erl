@@ -10,28 +10,28 @@
 -opaque task() :: tf_task().
 -type tasks() :: #{ TaskId :: term() => Task :: task() }.
 
--ifdef(pre19).
--type task_settings() ::
-    #{ timeout => pos_integer() }.
--else.
+-ifndef(pre19).
 -type task_settings() ::
     #{ timeout := pos_integer() }.
+-else.
+-type task_settings() ::
+    #{ timeout => pos_integer() }.
 -endif.
 
 -type execution_options() ::
     #{ timeout => pos_integer(),
        max_workers => pos_integer() }.
 
--ifdef(pre19).
--type result() ::
-    #{ completed => #{ TaskId :: term() => TaskResult :: term() },
-       individual_timeouts => [TaskId :: term()],
-       global_timeouts => [TaskId :: term()] }.
--else.
+-ifndef(pre19).
 -type result() ::
     #{ completed := #{ TaskId :: term() => TaskResult :: term() },
        individual_timeouts := [TaskId :: term()],
        global_timeouts := [TaskId :: term()] }.
+-else.
+-type result() ::
+    #{ completed => #{ TaskId :: term() => TaskResult :: term() },
+       individual_timeouts => [TaskId :: term()],
+       global_timeouts => [TaskId :: term()] }.
 -endif.
 
 -export_type([task/0]).
