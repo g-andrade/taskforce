@@ -4,7 +4,7 @@
 
 Copyright (c) 2015 Guilherme Andrade
 
-__Version:__ 1.0.2-27-g77b6e87
+__Version:__ 1.2.0
 
 __Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
 
