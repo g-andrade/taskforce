@@ -9,7 +9,14 @@
     crypto
    ]},
   {env,[]},
-  {modules, []},
+  {modules,
+   [taskforce_app,
+    taskforce,
+    taskforce_sup,
+    tf_master_serv,
+    tf_master_sup,
+    tf_minion_serv,
+    tf_minion_sup]},
   {mod, {taskforce_app, []}},
 
   {maintainers, ["Guilherme Andrade"]},
