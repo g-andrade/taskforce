@@ -18,6 +18,15 @@
                              GlobalTimeouts::[tf_task_id()]}.
 
 
+-export_type([tf_task_id/0]).
+-export_type([tf_fun_ref/0]).
+-export_type([tf_fun_args/0]).
+-export_type([tf_timeout/0]).
+-export_type([tf_proplist/2]).
+-export_type([tf_task/0]).
+-export_type([tf_task_result/0]).
+-export_type([execution_result/0]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -spec new_task(Id::tf_task_id(), FunRef::tf_fun_ref(), Args::tf_fun_args(), Timeout::tf_timeout())
         -> tf_task().
