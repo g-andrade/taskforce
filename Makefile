@@ -1,42 +1,38 @@
-REBAR = $(shell command -v rebar || echo ./rebar)
-DEPS_PLT=./.deps_plt
-DEPS=erts kernel stdlib
+REBAR3_URL=https://s3.amazonaws.com/rebar3/rebar3
 
-.PHONY: all get-deps compile clean dialyze xref
+ifeq ($(wildcard rebar3),rebar3)
+	REBAR3 = $(CURDIR)/rebar3
+endif
 
-all: get-deps compile
+REBAR3 ?= $(shell test -e `which rebar3` 2>/dev/null && which rebar3 || echo "./rebar3")
 
-get-deps:
-	@$(REBAR) get-deps
+ifeq ($(REBAR3),)
+	REBAR3 = $(CURDIR)/rebar3
+endif
 
-compile:
-	@$(REBAR) compile
+.PHONY: deps build dialyzer xref doc publish
 
-#test: compile
-#	@ERL_AFLAGS="-config test/taskforce_tests.app.config" $(REBAR) eunit skip_deps=true
+all: build
+
+build: $(REBAR3)
+	@$(REBAR3) compile
+
+$(REBAR3):
+	wget $(REBAR3_URL) || curl -Lo rebar3 $(REBAR3_URL)
+	@chmod a+x rebar3
 
 clean:
-	@$(REBAR) clean
+	@$(REBAR3) clean
 
-$(DEPS_PLT):
-	@echo Building $(DEPS_PLT)
-	dialyzer --build_plt \
-	  --output_plt $(DEPS_PLT) \
-	  --apps $(DEPS)
-#-r deps \
-
-dialyze: compile $(DEPS_PLT)
-	dialyzer --fullpath \
-		--src src \
-		-Wunmatched_returns \
-		-Werror_handling \
-		-Wrace_conditions \
-		-Wunderspecs \
-		-r ebin \
-		--plt $(DEPS_PLT)
+dialyzer:
+	@$(REBAR3) dialyzer
 
 xref:
-	@$(REBAR) xref
+	@$(REBAR3) xref
 
-doc: compile
+doc: build
+	./scripts/hackish_inject_version_in_docs.sh
 	./scripts/hackish_make_docs.sh
+
+publish:
+	@$(REBAR3) as publish hex publish
