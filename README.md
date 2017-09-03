@@ -4,7 +4,7 @@
 
 Copyright (c) 2015 Guilherme Andrade
 
-__Version:__ 1.2.1
+__Version:__ 1.2.2
 
 __Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
 
@@ -19,9 +19,9 @@ __Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
 
 ```erlang
 
-Tasks = #{ some_task => taskforce:task(function work/0, Args, #{ timeout => 2000 }),
-           similar_task => taskforce:task(function work/0, Args123, #{ timeout => 2500 }),
-           other_task => taskforce:task(function other_work/0, OtherArgs, #{ timeout => 500 }) }.
+Tasks = #{ some_task => taskforce:task(fun work/0, Args, #{ timeout => 2000 }),
+           similar_task => taskforce:task(fun work/0, Args123, #{ timeout => 2500 }),
+           other_task => taskforce:task(fun other_work/1, OtherArgs, #{ timeout => 500 }) }.
 
 ```
 
