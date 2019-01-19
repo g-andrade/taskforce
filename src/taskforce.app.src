@@ -1,7 +1,7 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
 {application, taskforce,
  [{description, "On-demand worker pools for parallelizable tasks"},
-  {vsn, git},
+  {vsn, "git"},
   {registered, []},
   {applications,
    [kernel,
@@ -18,7 +18,6 @@
     tf_minion_sup]},
   {mod, {taskforce_app, []}},
 
-  {maintainers, ["Guilherme Andrade"]},
   {licenses, ["MIT"]},
   {links, [{"Github", "https://github.com/g-andrade/taskforce"}]}
  ]}.
