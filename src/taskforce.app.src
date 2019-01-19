@@ -19,5 +19,7 @@
   {mod, {taskforce_app, []}},
 
   {licenses, ["MIT"]},
-  {links, [{"Github", "https://github.com/g-andrade/taskforce"}]}
+  {links, [{"GitHub", "https://github.com/g-andrade/taskforce"},
+           {"GitLab", "https://gitlab.com/g-andrade/taskforce"}
+          ]}
  ]}.
