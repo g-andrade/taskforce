@@ -11,6 +11,7 @@ ifeq ($(REBAR3),)
 endif
 
 .PHONY: deps build dialyzer xref test doc publish
+.NOTPARALLEL: check
 
 all: build
 
@@ -23,6 +24,8 @@ $(REBAR3):
 
 clean:
 	@$(REBAR3) clean
+
+check: dialyzer xref
 
 dialyzer:
 	@$(REBAR3) dialyzer
