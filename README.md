@@ -2,7 +2,7 @@
 
 # taskforce #
 
-Copyright (c) 2015 Guilherme Andrade
+Copyright (c) 2015-2021 Guilherme Andrade
 
 __Version:__ 1.2.3
 

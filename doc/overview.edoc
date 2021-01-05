@@ -1,7 +1,7 @@
 ** this is the overview.doc file for the application 'frob' **
 
 @author Guilherme Andrade <g@gandrade.net>
-@copyright 2015 Guilherme Andrade
+@copyright 2015-2021 Guilherme Andrade
 @version 1.2.3
 @title taskforce
 @doc `taskforce' allows you to parallelise arbitrary tasks in a controlled way.
