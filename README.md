@@ -2,6 +2,9 @@
 
 # taskforce #
 
+**This library is not under active maintenance; if you'd like to perform
+maintenance yourself, feel free to open an issue requesting access.**
+
 Copyright (c) 2015-2022 Guilherme Andrade
 
 __Version:__ 1.2.3
