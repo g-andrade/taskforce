@@ -58,8 +58,8 @@ calculate_primes_test() ->
         maps:to_list(NthPrimes)
     ).
 
--spec calculate_primes__old_interface__test() -> ok.
-calculate_primes__old_interface__test() ->
+-spec calculate_primes_old_interface_test() -> ok.
+calculate_primes_old_interface_test() ->
     application:ensure_all_started(taskforce),
 
     NrOfPrimes = 200,
@@ -117,8 +117,10 @@ find_prime(N) ->
 
 -spec is_prime(pos_integer()) -> boolean().
 is_prime(N) ->
-    Factors = factors(N),
-    length(Factors) =:= 2.
+    case factors(N) of
+        [_, _] -> true;
+        _ -> false
+    end.
 
 -spec factors(pos_integer()) -> [pos_integer(), ...].
 factors(N) ->

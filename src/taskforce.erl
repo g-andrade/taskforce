@@ -43,6 +43,7 @@ the [README](readme.html) for an overview and examples.
 
 -export_type([task/0]).
 -export_type([tasks/0]).
+-export_type([task_settings/0]).
 -export_type([execution_options/0]).
 -export_type([result/0]).
 
@@ -116,7 +117,7 @@ hit an `individual_timeouts` or a `global_timeouts`.
 
 execute(Tasks, ExecutionOptions) ->
     TaskList = task_list(Tasks),
-    result(execute_(TaskList, ExecutionOptions)).
+    result(do_execute(TaskList, ExecutionOptions)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Old interface (deprecated)
@@ -129,7 +130,7 @@ execute(Tasks, ExecutionOptions) ->
     FunRef :: fun(),
     Args :: [term()],
     Timeout :: pos_integer(),
-    Task :: tf_task().
+    Task :: task().
 
 new_task(Id, FunRef, Args, Timeout) ->
     #tf_task{
@@ -152,7 +153,7 @@ new_task(Id, FunRef, Args, Timeout) ->
     TaskId :: term().
 
 execute_tasks(TaskList) ->
-    old_style_result(execute_(TaskList, #{})).
+    old_style_result(do_execute(TaskList, #{})).
 
 -ifdef(E48).
 -doc false.
@@ -168,7 +169,7 @@ execute_tasks(TaskList) ->
     TaskId :: term().
 
 execute_tasks(TaskList, Timeout) ->
-    old_style_result(execute_(TaskList, #{timeout => Timeout})).
+    old_style_result(do_execute(TaskList, #{timeout => Timeout})).
 
 -ifdef(E48).
 -doc false.
@@ -187,7 +188,7 @@ execute_tasks(TaskList, Timeout) ->
 
 execute_tasks(TaskList, Timeout, MaxWorkers) ->
     old_style_result(
-        execute_(TaskList, #{
+        do_execute(TaskList, #{
             timeout => Timeout,
             max_workers => MaxWorkers
         })
@@ -243,12 +244,12 @@ global_timeout(TaskList, MaxWorkers, ExecutionOptions) ->
             lists:sum([Task#tf_task.timeout || Task <- TaskList]) div MaxWorkers
     end.
 
--spec execute_(TaskList, ExecutionOptions) -> BiddingResult when
+-spec do_execute(TaskList, ExecutionOptions) -> BiddingResult when
     TaskList :: [task()],
     ExecutionOptions :: execution_options(),
     BiddingResult :: tf_bidding_result().
 
-execute_(TaskList, ExecutionOptions) ->
+do_execute(TaskList, ExecutionOptions) ->
     MaxWorkers = max_workers(ExecutionOptions),
     GlobalTimeout = global_timeout(TaskList, MaxWorkers, ExecutionOptions),
     ShuffledTasks = shuffle_list(TaskList),

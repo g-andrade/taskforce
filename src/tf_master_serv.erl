@@ -80,10 +80,10 @@ handle_call(
         exec_state = NewExecState,
         tasks = Tasks
     },
-    case length(Tasks) == 0 of
-        true ->
+    case Tasks of
+        [] ->
             {stop, normal, NewState};
-        false ->
+        [_ | _] ->
             erlang:send_after(BiddingTimeout, self(), bidding_timeout),
             {noreply, NewState}
     end;
@@ -109,33 +109,13 @@ handle_call(
 handle_cast(
     {{task_completed, TaskId}, TaskResult}, #master_state{exec_state = {running, _}} = State
 ) ->
-    PrevCompleted = State#master_state.completed,
-    NewCompleted = [{TaskId, TaskResult} | PrevCompleted],
+    NewCompleted = [{TaskId, TaskResult} | State#master_state.completed],
     NewState = State#master_state{completed = NewCompleted},
-
-    ConsumedIds = NewState#master_state.consumed_task_ids,
-    Tasks = NewState#master_state.tasks,
-    Timeouts = NewState#master_state.timedout_task_ids,
-    case {length(Tasks), length(NewCompleted) + length(Timeouts), length(ConsumedIds)} of
-        {0, V, V} ->
-            {stop, normal, NewState};
-        _ ->
-            {noreply, NewState}
-    end;
+    stop_when_done(NewState);
 handle_cast({{task_timeout, TaskId}}, #master_state{exec_state = {running, _}} = State) ->
-    PrevTimeouts = State#master_state.timedout_task_ids,
-    NewTimeouts = [TaskId | PrevTimeouts],
+    NewTimeouts = [TaskId | State#master_state.timedout_task_ids],
     NewState = State#master_state{timedout_task_ids = NewTimeouts},
-
-    ConsumedIds = NewState#master_state.consumed_task_ids,
-    Tasks = NewState#master_state.tasks,
-    Completed = NewState#master_state.completed,
-    case {length(Tasks), length(NewTimeouts) + length(Completed), length(ConsumedIds)} of
-        {0, V, V} ->
-            {stop, normal, NewState};
-        _ ->
-            {noreply, NewState}
-    end.
+    stop_when_done(NewState).
 
 -spec handle_info(term(), state()) ->
     {stop, {shutdown, patron_death | bidding_timeout}, state()}.
@@ -176,6 +156,25 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+-spec stop_when_done(state()) -> {noreply, state()} | {stop, normal, state()}.
+stop_when_done(State) ->
+    case all_tasks_accounted_for(State) of
+        true ->
+            {stop, normal, State};
+        false ->
+            {noreply, State}
+    end.
+
+-spec all_tasks_accounted_for(state()) -> boolean().
+all_tasks_accounted_for(#master_state{
+    tasks = Tasks,
+    completed = Completed,
+    timedout_task_ids = Timeouts,
+    consumed_task_ids = ConsumedIds
+}) ->
+    Tasks =:= [] andalso
+        (length(Completed) + length(Timeouts)) =:= length(ConsumedIds).
 
 spawn_minions(MaxMinionCount) ->
     Self = self(),
