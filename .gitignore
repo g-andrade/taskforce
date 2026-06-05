@@ -1,12 +1,15 @@
-.eunit
-deps
-*.o
-*.beam
-*.plt
+.rebar3
+
+# asdf
+.tool-versions
+
+# claude local settings
+/claude/settings.local.json
+
+# build/doc/run artifacts
+_build
+doc/
 erl_crash.dump
-ebin
-rel/example_project
-.concrete/DEV_MODE
-.rebar
-*.swp
-_build/
+log
+rebar3.crashdump
+/tmp/

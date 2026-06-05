@@ -112,10 +112,3 @@ io:format("200th prime is: ~p~n", [maps:get(200, NthPrimes)]).
 ```
 Also in `examples/`.
 
-
-## Modules ##
-
-
-<table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/g-andrade/taskforce/blob/master/doc/taskforce.md" class="module">taskforce</a></td></tr></table>
-

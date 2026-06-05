@@ -1,6 +1,9 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
-%% @hidden
 -module(tf_master_sup).
+
+-ifdef(E48).
+-moduledoc false.
+-endif.
 
 -behaviour(supervisor).
 
@@ -12,20 +15,11 @@
 
 -ignore_xref([{start_link, 0}]).
 
--define(CHILD(Id, Mod, Type, Args, Restart), {Id, {Mod, start_link, Args},
-                                              Restart, 5000, Type, [Mod]}).
-
 %%%===================================================================
 %%% API functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Starts the supervisor
-%%
-%% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
-%% @end
-%%--------------------------------------------------------------------
+-spec start_link() -> supervisor:startlink_ret().
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
@@ -33,22 +27,17 @@ start_link() ->
 %%% Supervisor callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Whenever a supervisor is started using supervisor:start_link/[2,3],
-%% this function is called by the new process to find out about
-%% restart strategy, maximum restart frequency and child
-%% specifications.
-%%
-%% @spec init(Args) -> {ok, {SupFlags, [ChildSpec]}} |
-%%                     ignore |
-%%                     {error, Reason}
-%% @end
-%%--------------------------------------------------------------------
+-spec init([]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec(), ...]}}.
 init([]) ->
-    ChildSpec = ?CHILD(masters, tf_master_serv, worker, [], temporary),
-    {ok, {{simple_one_for_one, 60, 3600}, [ChildSpec]}}.
+    SupFlags = #{strategy => simple_one_for_one,
+                 intensity => 60,
+                 period => 3600},
+    ChildSpec = #{id => masters,
+                  start => {tf_master_serv, start_link, []},
+                  restart => temporary,
+                  shutdown => 5000,
+                  type => worker},
+    {ok, {SupFlags, [ChildSpec]}}.
 
 %%%===================================================================
 %%% Internal functions

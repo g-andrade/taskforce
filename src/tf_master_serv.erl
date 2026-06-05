@@ -1,6 +1,9 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
-%% @hidden
 -module(tf_master_serv).
+
+-ifdef(E48).
+-moduledoc false.
+-endif.
 
 -behaviour(gen_server).
 
@@ -17,8 +20,7 @@
 
 -ignore_xref([{start_link, 2}]).
 
-%% @headerfile "../include/taskforce.hrl"
--include("include/taskforce.hrl").
+-include("taskforce.hrl").
 
 -type exec_state() :: idle | {running, Bidder::any()}.
 
@@ -32,18 +34,13 @@
         completed = [] :: [any()],
         timedout_task_ids = [] :: [any()]
         }).
+-type state() :: #master_state{}.
 
 %%%===================================================================
 %%% API functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Starts the server
-%%
-%% @spec start_link(PatronPid, MaxMinionCount) -> {ok, Pid} | ignore | {error, Error}
-%% @end
-%%--------------------------------------------------------------------
+-spec start_link(pid(), pos_integer()) -> {ok, pid()}.
 start_link(PatronPid, MaxMinionCount) ->
     gen_server:start_link(?MODULE, [PatronPid, MaxMinionCount], []).
 
@@ -51,37 +48,17 @@ start_link(PatronPid, MaxMinionCount) ->
 %%% gen_server callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Initializes the server
-%%
-%% @spec init(Args) -> {ok, State} |
-%%                     {ok, State, Timeout} |
-%%                     ignore |
-%%                     {stop, Reason}
-%% @end
-%%--------------------------------------------------------------------
+-spec init([pid() | pos_integer(), ...]) -> {ok, state()}.
 init([PatronPid, MaxMinionCount]) ->
     State0 = #master_state{patron_pid = PatronPid,
                            patron_monitor = monitor(process, PatronPid),
                            max_minion_count = MaxMinionCount},
     {ok, State0}.
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Handling call messages
-%%
-%% @spec handle_call(Request, From, State) ->
-%%                                   {reply, Reply, State} |
-%%                                   {reply, Reply, State, Timeout} |
-%%                                   {noreply, State} |
-%%                                   {noreply, State, Timeout} |
-%%                                   {stop, Reason, Reply, State} |
-%%                                   {stop, Reason, State}
-%% @end
-%%--------------------------------------------------------------------
+-spec handle_call(term(), gen_server:from(), state()) ->
+    {reply, {ok, tf_task()} | {error, no_more_tasks}, state()}
+    | {noreply, state()}
+    | {stop, normal, state()}.
 handle_call({do_my_bidding, #tf_bidding{}=Bidding}, Bidder, #master_state{ exec_state=idle }=State) ->
     #tf_bidding{tasks=Tasks,
                 timeout=BiddingTimeout }=Bidding,
@@ -114,16 +91,7 @@ handle_call(consume_task, {_MinionPid, _}, #master_state{ exec_state={running, _
     {reply, {error, no_more_tasks}, State}.
 
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Handling cast messages
-%%
-%% @spec handle_cast(Msg, State) -> {noreply, State} |
-%%                                  {noreply, State, Timeout} |
-%%                                  {stop, Reason, State}
-%% @end
-%%--------------------------------------------------------------------
+-spec handle_cast(term(), state()) -> {noreply, state()} | {stop, normal, state()}.
 handle_cast({{task_completed, TaskId}, TaskResult}, #master_state{ exec_state={running, _} }=State) ->
     PrevCompleted = State#master_state.completed,
     NewCompleted = [{TaskId, TaskResult} | PrevCompleted],
@@ -154,33 +122,15 @@ handle_cast({{task_timeout, TaskId}}, #master_state{ exec_state={running, _} }=S
             {noreply, NewState}
     end.
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Handling all non call/cast messages
-%%
-%% @spec handle_info(Info, State) -> {noreply, State} |
-%%                                   {noreply, State, Timeout} |
-%%                                   {stop, Reason, State}
-%% @end
-%%--------------------------------------------------------------------
+-spec handle_info(term(), state()) ->
+    {stop, {shutdown, patron_death | bidding_timeout}, state()}.
 handle_info({'DOWN', Reference, process, _Pid, _Reason}, #master_state{ patron_monitor=Reference }=State) ->
     {stop, {shutdown, patron_death}, State};
 
 handle_info(bidding_timeout, #master_state{ exec_state={running, _} }=State) ->
     {stop, {shutdown, bidding_timeout}, State}.
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% This function is called by a gen_server when it is about to
-%% terminate. It should be the opposite of Module:init/1 and do any
-%% necessary cleaning up. When it returns, the gen_server terminates
-%% with Reason. The return value is ignored.
-%%
-%% @spec terminate(Reason, State) -> void()
-%% @end
-%%--------------------------------------------------------------------
+-spec terminate(term(), state()) -> ok.
 terminate(_Reason, #master_state{ exec_state=idle }=_State) ->
     ok;
 
@@ -200,14 +150,7 @@ terminate(_Reason, #master_state{ exec_state={running, Bidder} }=State) ->
     gen_server:reply(Bidder, {ok, BiddingResults}),
     ok.
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Convert process state when code is changed
-%%
-%% @spec code_change(OldVsn, State, Extra) -> {ok, NewState}
-%% @end
-%%--------------------------------------------------------------------
+-spec code_change(term(), state(), term()) -> {ok, state()}.
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 

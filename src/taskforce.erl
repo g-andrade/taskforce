@@ -1,7 +1,19 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
 -module(taskforce).
 
--include("include/taskforce.hrl").
+-ifdef(E48).
+-moduledoc """
+Parallelise arbitrary tasks in a controlled way.
+
+`taskforce` runs a group of independent tasks concurrently, bounding both the
+number of workers and how long execution may take, and gathers their results.
+
+Build tasks with `task/3`, then run them with `execute/1` or `execute/2`. See
+the [README](readme.html) for an overview and examples.
+""".
+-endif.
+
+-include("taskforce.hrl").
 
 -export([task/3]).         -ignore_xref({task,3}).
 -export([execute/1]).      -ignore_xref({execute,1}).
@@ -10,29 +22,17 @@
 -opaque task() :: tf_task().
 -type tasks() :: #{ TaskId :: term() => Task :: task() }.
 
--ifndef(pre19).
 -type task_settings() ::
     #{ timeout := pos_integer() }.
--else.
--type task_settings() ::
-    #{ timeout => pos_integer() }.
--endif.
 
 -type execution_options() ::
     #{ timeout => pos_integer(),
        max_workers => pos_integer() }.
 
--ifndef(pre19).
 -type result() ::
     #{ completed := #{ TaskId :: term() => TaskResult :: term() },
        individual_timeouts := [TaskId :: term()],
        global_timeouts := [TaskId :: term()] }.
--else.
--type result() ::
-    #{ completed => #{ TaskId :: term() => TaskResult :: term() },
-       individual_timeouts => [TaskId :: term()],
-       global_timeouts => [TaskId :: term()] }.
--endif.
 
 -export_type([task/0]).
 -export_type([tasks/0]).
@@ -52,6 +52,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Interface
 
+-ifdef(E48).
+-doc """
+Create a task that runs `Function` applied to `Args`.
+
+`TaskSettings` must contain a `timeout`, in milliseconds, bounding how long the
+individual task may run before being given up on.
+""".
+-endif.
 -spec task(Function, Args, TaskSettings) -> Task
         when Function :: fun(),
              Args :: [term()],
@@ -65,6 +73,13 @@ task(Function, Args, TaskSettings) ->
               timeout = maps:get(timeout, TaskSettings) }.
 
 
+-ifdef(E48).
+-doc """
+Run `Tasks` concurrently with default execution options.
+
+Equivalent to `execute(Tasks, #{})`.
+""".
+-endif.
 -spec execute(Tasks) -> Result
         when Tasks :: tasks(),
              Result :: result().
@@ -73,6 +88,16 @@ execute(Tasks) ->
     execute(Tasks, #{}).
 
 
+-ifdef(E48).
+-doc """
+Run `Tasks` concurrently, subject to `ExecutionOptions`.
+
+`ExecutionOptions` may bound the global `timeout` (in milliseconds) and the
+maximum number of concurrent workers (`max_workers`); both default sensibly when
+omitted. Returns the tasks that `completed`, along with the ids of those that
+hit an `individual_timeouts` or a `global_timeouts`.
+""".
+-endif.
 -spec execute(Tasks, ExecutionOptions) -> Result
         when Tasks :: tasks(),
              ExecutionOptions :: execution_options(),
@@ -86,7 +111,9 @@ execute(Tasks, ExecutionOptions) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Old interface (deprecated)
 
-%% @hidden
+-ifdef(E48).
+-doc false.
+-endif.
 -spec new_task(Id, FunRef, Args, Timeout) -> Task
         when Id :: term(),
              FunRef :: fun(),
@@ -101,7 +128,9 @@ new_task(Id, FunRef, Args, Timeout) ->
              timeout = Timeout}.
 
 
-%% @hidden
+-ifdef(E48).
+-doc false.
+-endif.
 -spec execute_tasks(TaskList) -> OldStyleResult
         when TaskList :: [Task],
              OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
@@ -115,7 +144,9 @@ execute_tasks(TaskList) ->
     old_style_result( execute_(TaskList, #{}) ).
 
 
-%% @hidden
+-ifdef(E48).
+-doc false.
+-endif.
 -spec execute_tasks(TaskList, Timeout) -> OldStyleResult
         when TaskList :: [Task],
              Timeout :: pos_integer(),
@@ -129,7 +160,9 @@ execute_tasks(TaskList) ->
 execute_tasks(TaskList, Timeout) ->
     old_style_result( execute_(TaskList, #{ timeout => Timeout }) ).
 
-%% @hidden
+-ifdef(E48).
+-doc false.
+-endif.
 -spec execute_tasks(TaskList, Timeout, MaxWorkers) -> OldStyleResult
         when TaskList :: [Task],
              Timeout :: pos_integer(),
@@ -155,13 +188,8 @@ shuffle_list(L) ->
     SortedKeyedL = lists:keysort(2, KeyedL),
     [V || {V, _K} <- SortedKeyedL].
 
--ifdef(pre18).
-rand_small() ->
-    random:uniform(1 bsl 26).
--else.
 rand_small() ->
     rand:uniform(1 bsl 26).
--endif.
 
 
 -spec task_list(Tasks) -> TaskList

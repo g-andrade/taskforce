@@ -1,6 +1,9 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
-%% @hidden
 -module(taskforce_app).
+
+-ifdef(E48).
+-moduledoc false.
+-endif.
 
 -behaviour(application).
 
@@ -12,35 +15,11 @@
 %%% Application callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% This function is called whenever an application is started using
-%% application:start/[1,2], and should start the processes of the
-%% application. If the application is structured according to the OTP
-%% design principles as a supervision tree, this means starting the
-%% top supervisor of the tree.
-%%
-%% @spec start(StartType, StartArgs) -> {ok, Pid} |
-%%                                      {ok, Pid, State} |
-%%                                      {error, Reason}
-%%      StartType = normal | {takeover, Node} | {failover, Node}
-%%      StartArgs = term()
-%% @end
-%%--------------------------------------------------------------------
+-spec start(application:start_type(), term()) -> supervisor:startlink_ret().
 start(_StartType, _StartArgs) ->
     taskforce_sup:start_link().
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% This function is called whenever an application has stopped. It
-%% is intended to be the opposite of Module:start/2 and should do
-%% any necessary cleaning up. The return value is ignored.
-%%
-%% @spec stop(State) -> void()
-%% @end
-%%--------------------------------------------------------------------
+-spec stop(term()) -> ok.
 stop(_State) ->
     ok.
 

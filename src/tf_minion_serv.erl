@@ -1,6 +1,9 @@
 % vim: set expandtab softtabstop=4 shiftwidth=4:
-%% @hidden
 -module(tf_minion_serv).
+
+-ifdef(E48).
+-moduledoc false.
+-endif.
 
 -behaviour(gen_server).
 
@@ -18,8 +21,7 @@
 -ignore_xref([{start_link, 1}]).
 
 
-%% @headerfile "../include/taskforce.hrl"
--include("include/taskforce.hrl").
+-include("taskforce.hrl").
 
 -record(task_ref, {
         id :: any(),
@@ -36,18 +38,13 @@
         master_monitor :: reference(),
         exec_state = 'idle' :: exec_state()
         }).
+-type state() :: #minion_state{}.
 
 %%%===================================================================
 %%% API functions
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Starts the server
-%%
-%% @spec start_link(MasterPid) -> {ok, Pid} | ignore | {error, Error}
-%% @end
-%%--------------------------------------------------------------------
+-spec start_link(pid()) -> {ok, pid()}.
 start_link(MasterPid) ->
     gen_server:start_link(?MODULE, [MasterPid], []).
 
@@ -55,50 +52,18 @@ start_link(MasterPid) ->
 %%% gen_server callbacks
 %%%===================================================================
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Initializes the server
-%%
-%% @spec init(Args) -> {ok, State} |
-%%                     {ok, State, Timeout} |
-%%                     ignore |
-%%                     {stop, Reason}
-%% @end
-%%--------------------------------------------------------------------
+-spec init([pid(), ...]) -> {ok, state()}.
 init([MasterPid]) ->
     State0 = #minion_state{master_pid = MasterPid,
                            master_monitor = monitor(process, MasterPid)},
     gen_server:cast(self(), get_task),
     {ok, State0}.
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Handling call messages
-%%
-%% @spec handle_call(Request, From, State) ->
-%%                                   {reply, Reply, State} |
-%%                                   {reply, Reply, State, Timeout} |
-%%                                   {noreply, State} |
-%%                                   {noreply, State, Timeout} |
-%%                                   {stop, Reason, Reply, State} |
-%%                                   {stop, Reason, State}
-%% @end
-%%--------------------------------------------------------------------
+-spec handle_call(term(), gen_server:from(), state()) -> {noreply, state()}.
 handle_call(_Request, _From, #minion_state{}=State) ->
     {noreply, State}.
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Handling cast messages
-%%
-%% @spec handle_cast(Msg, State) -> {noreply, State} |
-%%                                  {noreply, State, Timeout} |
-%%                                  {stop, Reason, State}
-%% @end
-%%--------------------------------------------------------------------
+-spec handle_cast(term(), state()) -> {noreply, state()} | {stop, normal, state()}.
 handle_cast(get_task, #minion_state{ exec_state=idle }=State) ->
     MasterPid = State#minion_state.master_pid,
     case catch gen_server:call(MasterPid, consume_task) of
@@ -148,16 +113,7 @@ handle_cast({{task_result, _TaskTag}, _TaskResult}, #minion_state{}=State) ->
 
 
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Handling all non call/cast messages
-%%
-%% @spec handle_info(Info, State) -> {noreply, State} |
-%%                                   {noreply, State, Timeout} |
-%%                                   {stop, Reason, State}
-%% @end
-%%--------------------------------------------------------------------
+-spec handle_info(term(), state()) -> {noreply, state()} | {stop, normal, state()}.
 handle_info({'DOWN', Reference, process, _Pid, _Reason}, #minion_state{ master_monitor=Reference }=State) ->
     {stop, normal, State};
 
@@ -176,28 +132,11 @@ handle_info({task_timeout, _TaskTag}, #minion_state{}=State) ->
     {noreply, State}.
 
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% This function is called by a gen_server when it is about to
-%% terminate. It should be the opposite of Module:init/1 and do any
-%% necessary cleaning up. When it returns, the gen_server terminates
-%% with Reason. The return value is ignored.
-%%
-%% @spec terminate(Reason, State) -> void()
-%% @end
-%%--------------------------------------------------------------------
+-spec terminate(term(), state()) -> ok.
 terminate(_Reason, #minion_state{}=_State) ->
     ok.
 
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Convert process state when code is changed
-%%
-%% @spec code_change(OldVsn, State, Extra) -> {ok, NewState}
-%% @end
-%%--------------------------------------------------------------------
+-spec code_change(term(), state(), term()) -> {ok, state()}.
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 

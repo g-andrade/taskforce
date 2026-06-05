@@ -1,44 +1,117 @@
-REBAR3_URL=https://s3.amazonaws.com/rebar3/rebar3
+SHELL := bash
+.ONESHELL:
+.SHELLFLAGS := -euc
+.DELETE_ON_ERROR:
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
 
-ifeq ($(wildcard rebar3),rebar3)
-	REBAR3 = $(CURDIR)/rebar3
-endif
+## General Rules
 
-REBAR3 ?= $(shell test -e `which rebar3` 2>/dev/null && which rebar3 || echo "./rebar3")
+all: compile
+.PHONY: all
+.NOTPARALLEL: all
 
-ifeq ($(REBAR3),)
-	REBAR3 = $(CURDIR)/rebar3
-endif
-
-.PHONY: deps build dialyzer xref test doc publish
-.NOTPARALLEL: check
-
-all: build
-
-build: $(REBAR3)
-	@$(REBAR3) compile
-
-$(REBAR3):
-	wget $(REBAR3_URL) || curl -Lo rebar3 $(REBAR3_URL)
-	@chmod a+x rebar3
+compile:
+	@rebar3 compile
+.PHONY: compile
 
 clean:
-	@$(REBAR3) clean
+	@rebar3 clean -a
+.PHONY: clean
 
-check: dialyzer xref
+check: check-fast check-slow
+.NOTPARALLEL: check
+.PHONY: check
 
-dialyzer:
-	@$(REBAR3) dialyzer
+check-fast: check-formatted xref hank-dead-code-cleaner elvis-linter
+.NOTPARALLEL: check-fast
+.PHONY: check-fast
+
+check-slow: dialyzer
+.NOTPARALLEL: check-slow
+.PHONY: check-slow
+
+test: eunit
+.NOTPARALLEL: test
+.PHONY: test
+
+format:
+	@rebar3 fmt
+.NOTPARALLEL: format
+.PHONY: format
+
+## Tests
+
+eunit:
+	@rebar3 do eunit, cover
+.PHONY: eunit
+
+## Checks
+
+check-formatted:
+	@if rebar3 plugins list | grep '^erlfmt\>' >/dev/null; then \
+		rebar3 fmt --check; \
+	else \
+		echo >&2 "WARN: skipping rebar3 erlfmt check"; \
+	fi
+.NOTPARALLEL: check-formatted
+.PHONY: check-formatted
 
 xref:
-	@$(REBAR3) xref
+	@rebar3 xref
+.NOTPARALLEL: xref
+.PHONY: xref
 
-test:
-	@$(REBAR3) eunit
+hank-dead-code-cleaner:
+	@if rebar3 plugins list | grep '^rebar3_hank\>' >/dev/null; then \
+		rebar3 hank; \
+	else \
+		echo >&2 "WARN: skipping rebar3_hank check"; \
+	fi
+.NOTPARALLEL: hank-dead-code-cleaner
+.PHONY: hank-dead-code-cleaner
 
-doc: build
-	./scripts/hackish_inject_version_in_docs.sh
-	./scripts/hackish_make_docs.sh
+elvis-linter:
+	@if rebar3 plugins list | grep '^rebar3_lint\>' >/dev/null; then \
+		rebar3 lint; \
+	else \
+		echo >&2 "WARN: skipping rebar3_lint check"; \
+	fi
+.NOTPARALLEL: elvis-linter
+.PHONY: elvis-linter
 
+dialyzer:
+	@rebar3 dialyzer
+.PHONY: dialyzer
+
+## Shell, docs and publication
+
+publish: doc
 publish:
-	@$(REBAR3) as publish hex publish
+	@rebar3 hex publish --doc-dir=doc
+.NOTPARALLEL: publish
+
+shell: export ERL_FLAGS = +pc unicode
+shell:
+	@rebar3 as shell shell
+
+doc: SOURCE_REF := $(shell git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD)
+doc: tmp/ex_doc
+doc:
+	rebar3 edoc; \
+		./tmp/ex_doc "taskforce" "${SOURCE_REF}" \
+		_build/docs/lib/taskforce/ebin \
+		-c ex_doc.config \
+		--source-ref "${SOURCE_REF}";
+.PHONY: doc
+
+tmp/ex_doc: EX_DOC_VER=0.40.2
+tmp/ex_doc: OTP_VER := $(shell erl -noshell -eval 'io:fwrite("~s", [erlang:system_info(otp_release)]), init:stop().')
+tmp/ex_doc: | tmp
+tmp/ex_doc:
+	curl -fL -o tmp/ex_doc \
+		"https://github.com/elixir-lang/ex_doc/releases/download/v${EX_DOC_VER}/ex_doc_otp_${OTP_VER}"; \
+		chmod a+x tmp/ex_doc
+
+tmp:
+	mkdir tmp
