@@ -81,9 +81,7 @@ in `include/taskforce.hrl`, included as `-include("taskforce.hrl")`.
   pinned `ex_doc` escript renders HTML. `make doc` runs both. There is **no**
   `docs` rebar3 profile and the pipeline does **not** use `rebar3 as docs`.
 - Internal functions only callable by tests are tagged `-ignore_xref([…])`.
-- `elvis.config` documents one exception: `no_catch_expressions` is ignored for
-  `tf_minion_serv`, which intentionally uses `catch` to capture arbitrary task
-  outcomes and the master's death. Test rules relax `no_debug_call`,
+- `elvis.config` test rules relax `no_debug_call`,
   `no_receive_without_timeout`, and `dont_repeat_yourself`.
 
 ## Tests

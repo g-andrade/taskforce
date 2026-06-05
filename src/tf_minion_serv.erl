@@ -69,7 +69,7 @@ handle_call(_Request, _From, #minion_state{} = State) ->
 -spec handle_cast(term(), state()) -> {noreply, state()} | {stop, normal, state()}.
 handle_cast(get_task, #minion_state{exec_state = idle} = State) ->
     MasterPid = State#minion_state.master_pid,
-    case catch gen_server:call(MasterPid, consume_task) of
+    try gen_server:call(MasterPid, consume_task) of
         {ok, Task} ->
             #tf_task{
                 id = TaskId,
@@ -82,7 +82,7 @@ handle_cast(get_task, #minion_state{exec_state = idle} = State) ->
             TaskTag = make_ref(),
             TimeoutTimer = erlang:send_after(Timeout, MinionPid, {task_timeout, TaskTag}),
             HandlerFun = fun() ->
-                Result = (catch apply(TaskFun, TaskArgs)),
+                Result = run_task(TaskFun, TaskArgs),
                 gen_server:cast(MinionPid, {{task_result, TaskTag}, Result})
             end,
             TaskPid = spawn(HandlerFun),
@@ -97,8 +97,9 @@ handle_cast(get_task, #minion_state{exec_state = idle} = State) ->
             NewState = State#minion_state{exec_state = NewExecState},
             {noreply, NewState};
         {error, no_more_tasks} ->
-            {stop, normal, State};
-        {'EXIT', _} ->
+            {stop, normal, State}
+    catch
+        _Class:_Reason ->
             {stop, normal, State}
     end;
 handle_cast(
@@ -147,3 +148,17 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+run_task(TaskFun, TaskArgs) ->
+    try
+        apply(TaskFun, TaskArgs)
+    catch
+        error:Reason:Stacktrace ->
+            {'EXIT', {Reason, Stacktrace}};
+        %
+        exit:Reason ->
+            {'EXIT', Reason};
+        %
+        throw:Reason ->
+            Reason
+    end.
