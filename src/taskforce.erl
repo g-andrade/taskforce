@@ -15,24 +15,31 @@ the [README](readme.html) for an overview and examples.
 
 -include("taskforce.hrl").
 
--export([task/3]).         -ignore_xref({task,3}).
--export([execute/1]).      -ignore_xref({execute,1}).
--export([execute/2]).      -ignore_xref({execute,2}).
+-export([task/3]).
+-ignore_xref({task, 3}).
+-export([execute/1]).
+-ignore_xref({execute, 1}).
+-export([execute/2]).
+-ignore_xref({execute, 2}).
 
 -opaque task() :: tf_task().
--type tasks() :: #{ TaskId :: term() => Task :: task() }.
+-type tasks() :: #{TaskId :: term() => Task :: task()}.
 
 -type task_settings() ::
-    #{ timeout := pos_integer() }.
+    #{timeout := pos_integer()}.
 
 -type execution_options() ::
-    #{ timeout => pos_integer(),
-       max_workers => pos_integer() }.
+    #{
+        timeout => pos_integer(),
+        max_workers => pos_integer()
+    }.
 
 -type result() ::
-    #{ completed := #{ TaskId :: term() => TaskResult :: term() },
-       individual_timeouts := [TaskId :: term()],
-       global_timeouts := [TaskId :: term()] }.
+    #{
+        completed := #{TaskId :: term() => TaskResult :: term()},
+        individual_timeouts := [TaskId :: term()],
+        global_timeouts := [TaskId :: term()]
+    }.
 
 -export_type([task/0]).
 -export_type([tasks/0]).
@@ -41,13 +48,17 @@ the [README](readme.html) for an overview and examples.
 
 %%%%
 %% deprecated
--export([new_task/4]).         -ignore_xref({new_task,4}).
--export([execute_tasks/1]).    -ignore_xref({execute_tasks,1}).
--export([execute_tasks/2]).    -ignore_xref({execute_tasks,2}).
--export([execute_tasks/3]).    -ignore_xref({execute_tasks,3}).
+-export([new_task/4]).
+-ignore_xref({new_task, 4}).
+-export([execute_tasks/1]).
+-ignore_xref({execute_tasks, 1}).
+-export([execute_tasks/2]).
+-ignore_xref({execute_tasks, 2}).
+-export([execute_tasks/3]).
+-ignore_xref({execute_tasks, 3}).
 
--deprecated([{new_task,4, next_major_release}]).
--deprecated([{execute_tasks,'_', next_major_release}]).
+-deprecated([{new_task, 4, next_major_release}]).
+-deprecated([{execute_tasks, '_', next_major_release}]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Interface
@@ -60,18 +71,19 @@ Create a task that runs `Function` applied to `Args`.
 individual task may run before being given up on.
 """.
 -endif.
--spec task(Function, Args, TaskSettings) -> Task
-        when Function :: fun(),
-             Args :: [term()],
-             TaskSettings :: task_settings(),
-             Task :: task().
+-spec task(Function, Args, TaskSettings) -> Task when
+    Function :: fun(),
+    Args :: [term()],
+    TaskSettings :: task_settings(),
+    Task :: task().
 
 task(Function, Args, TaskSettings) ->
-    #tf_task{ id = implicit_id,
-              fun_ref = Function,
-              args = Args,
-              timeout = maps:get(timeout, TaskSettings) }.
-
+    #tf_task{
+        id = implicit_id,
+        fun_ref = Function,
+        args = Args,
+        timeout = maps:get(timeout, TaskSettings)
+    }.
 
 -ifdef(E48).
 -doc """
@@ -80,13 +92,12 @@ Run `Tasks` concurrently with default execution options.
 Equivalent to `execute(Tasks, #{})`.
 """.
 -endif.
--spec execute(Tasks) -> Result
-        when Tasks :: tasks(),
-             Result :: result().
+-spec execute(Tasks) -> Result when
+    Tasks :: tasks(),
+    Result :: result().
 
 execute(Tasks) ->
     execute(Tasks, #{}).
-
 
 -ifdef(E48).
 -doc """
@@ -98,15 +109,14 @@ omitted. Returns the tasks that `completed`, along with the ids of those that
 hit an `individual_timeouts` or a `global_timeouts`.
 """.
 -endif.
--spec execute(Tasks, ExecutionOptions) -> Result
-        when Tasks :: tasks(),
-             ExecutionOptions :: execution_options(),
-             Result :: result().
+-spec execute(Tasks, ExecutionOptions) -> Result when
+    Tasks :: tasks(),
+    ExecutionOptions :: execution_options(),
+    Result :: result().
 
 execute(Tasks, ExecutionOptions) ->
     TaskList = task_list(Tasks),
-    result( execute_(TaskList, ExecutionOptions) ).
-
+    result(execute_(TaskList, ExecutionOptions)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Old interface (deprecated)
@@ -114,71 +124,74 @@ execute(Tasks, ExecutionOptions) ->
 -ifdef(E48).
 -doc false.
 -endif.
--spec new_task(Id, FunRef, Args, Timeout) -> Task
-        when Id :: term(),
-             FunRef :: fun(),
-             Args :: [term()],
-             Timeout :: pos_integer(),
-             Task :: tf_task().
+-spec new_task(Id, FunRef, Args, Timeout) -> Task when
+    Id :: term(),
+    FunRef :: fun(),
+    Args :: [term()],
+    Timeout :: pos_integer(),
+    Task :: tf_task().
 
 new_task(Id, FunRef, Args, Timeout) ->
-    #tf_task{id = Id,
-             fun_ref = FunRef,
-             args = Args,
-             timeout = Timeout}.
-
+    #tf_task{
+        id = Id,
+        fun_ref = FunRef,
+        args = Args,
+        timeout = Timeout
+    }.
 
 -ifdef(E48).
 -doc false.
 -endif.
--spec execute_tasks(TaskList) -> OldStyleResult
-        when TaskList :: [Task],
-             OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
-             Completed :: [{TaskId, Task}],
-             IndividualTimeouts :: [TaskId],
-             Timeouts :: [TaskId],
-             Task :: [task()],
-             TaskId :: term().
+-spec execute_tasks(TaskList) -> OldStyleResult when
+    TaskList :: [Task],
+    OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
+    Completed :: [{TaskId, Task}],
+    IndividualTimeouts :: [TaskId],
+    Timeouts :: [TaskId],
+    Task :: [task()],
+    TaskId :: term().
 
 execute_tasks(TaskList) ->
-    old_style_result( execute_(TaskList, #{}) ).
-
+    old_style_result(execute_(TaskList, #{})).
 
 -ifdef(E48).
 -doc false.
 -endif.
--spec execute_tasks(TaskList, Timeout) -> OldStyleResult
-        when TaskList :: [Task],
-             Timeout :: pos_integer(),
-             OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
-             Completed :: [{TaskId, Task}],
-             IndividualTimeouts :: [TaskId],
-             Timeouts :: [TaskId],
-             Task :: [task()],
-             TaskId :: term().
+-spec execute_tasks(TaskList, Timeout) -> OldStyleResult when
+    TaskList :: [Task],
+    Timeout :: pos_integer(),
+    OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
+    Completed :: [{TaskId, Task}],
+    IndividualTimeouts :: [TaskId],
+    Timeouts :: [TaskId],
+    Task :: [task()],
+    TaskId :: term().
 
 execute_tasks(TaskList, Timeout) ->
-    old_style_result( execute_(TaskList, #{ timeout => Timeout }) ).
+    old_style_result(execute_(TaskList, #{timeout => Timeout})).
 
 -ifdef(E48).
 -doc false.
 -endif.
--spec execute_tasks(TaskList, Timeout, MaxWorkers) -> OldStyleResult
-        when TaskList :: [Task],
-             Timeout :: pos_integer(),
-             MaxWorkers :: pos_integer(),
-             OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
-             Completed :: [{TaskId, TaskResult}],
-             IndividualTimeouts :: [TaskId],
-             Timeouts :: [TaskId],
-             Task :: [task()],
-             TaskId :: term(),
-             TaskResult :: term().
+-spec execute_tasks(TaskList, Timeout, MaxWorkers) -> OldStyleResult when
+    TaskList :: [Task],
+    Timeout :: pos_integer(),
+    MaxWorkers :: pos_integer(),
+    OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
+    Completed :: [{TaskId, TaskResult}],
+    IndividualTimeouts :: [TaskId],
+    Timeouts :: [TaskId],
+    Task :: [task()],
+    TaskId :: term(),
+    TaskResult :: term().
 
 execute_tasks(TaskList, Timeout, MaxWorkers) ->
     old_style_result(
-      execute_(TaskList, #{ timeout => Timeout,
-                            max_workers => MaxWorkers })).
+        execute_(TaskList, #{
+            timeout => Timeout,
+            max_workers => MaxWorkers
+        })
+    ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Internal
@@ -191,21 +204,21 @@ shuffle_list(L) ->
 rand_small() ->
     rand:uniform(1 bsl 26).
 
-
--spec task_list(Tasks) -> TaskList
-        when Tasks :: #{ TaskId => Task },
-             TaskList :: [Task],
-             TaskId :: term(),
-             Task :: task().
+-spec task_list(Tasks) -> TaskList when
+    Tasks :: #{TaskId => Task},
+    TaskList :: [Task],
+    TaskId :: term(),
+    Task :: task().
 
 task_list(Tasks) ->
-    [Task#tf_task{ id = Id }
-     || {Id, Task} <- maps:to_list(Tasks)].
+    [
+        Task#tf_task{id = Id}
+     || {Id, Task} <- maps:to_list(Tasks)
+    ].
 
-
--spec max_workers(ExecutionOptions) -> MaxWorkers
-        when ExecutionOptions :: execution_options(),
-             MaxWorkers :: pos_integer().
+-spec max_workers(ExecutionOptions) -> MaxWorkers when
+    ExecutionOptions :: execution_options(),
+    MaxWorkers :: pos_integer().
 
 max_workers(ExecutionOptions) ->
     case maps:find(max_workers, ExecutionOptions) of
@@ -215,13 +228,12 @@ max_workers(ExecutionOptions) ->
             erlang:system_info(schedulers_online)
     end.
 
-
--spec global_timeout(TaskList, MaxWorkers, ExecutionOptions) -> GlobalTimeout
-        when TaskList :: [Task],
-             MaxWorkers :: pos_integer(),
-             ExecutionOptions :: execution_options(),
-             GlobalTimeout :: pos_integer(),
-             Task :: task().
+-spec global_timeout(TaskList, MaxWorkers, ExecutionOptions) -> GlobalTimeout when
+    TaskList :: [Task],
+    MaxWorkers :: pos_integer(),
+    ExecutionOptions :: execution_options(),
+    GlobalTimeout :: pos_integer(),
+    Task :: task().
 
 global_timeout(TaskList, MaxWorkers, ExecutionOptions) ->
     case maps:find(timeout, ExecutionOptions) of
@@ -231,17 +243,16 @@ global_timeout(TaskList, MaxWorkers, ExecutionOptions) ->
             lists:sum([Task#tf_task.timeout || Task <- TaskList]) div MaxWorkers
     end.
 
-
--spec execute_(TaskList, ExecutionOptions) -> BiddingResult
-        when TaskList :: [task()],
-             ExecutionOptions :: execution_options(),
-             BiddingResult :: tf_bidding_result().
+-spec execute_(TaskList, ExecutionOptions) -> BiddingResult when
+    TaskList :: [task()],
+    ExecutionOptions :: execution_options(),
+    BiddingResult :: tf_bidding_result().
 
 execute_(TaskList, ExecutionOptions) ->
     MaxWorkers = max_workers(ExecutionOptions),
     GlobalTimeout = global_timeout(TaskList, MaxWorkers, ExecutionOptions),
     ShuffledTasks = shuffle_list(TaskList),
-    Bidding = #tf_bidding{ tasks = ShuffledTasks, timeout = GlobalTimeout },
+    Bidding = #tf_bidding{tasks = ShuffledTasks, timeout = GlobalTimeout},
 
     {ok, MasterPid} =
         supervisor:start_child(tf_master_sup, [self(), MaxWorkers]),
@@ -251,35 +262,37 @@ execute_(TaskList, ExecutionOptions) ->
 
     BiddingResult.
 
-
--spec result(BiddingResult) -> Result
-        when BiddingResult :: tf_bidding_result(),
-             Result :: result().
+-spec result(BiddingResult) -> Result when
+    BiddingResult :: tf_bidding_result(),
+    Result :: result().
 
 result(BiddingResult) ->
     #tf_bidding_result{
-       completed = CompletedList,
-       individual_timeouts = IndividualTimeouts,
-       global_timeouts = Timeouts } = BiddingResult,
+        completed = CompletedList,
+        individual_timeouts = IndividualTimeouts,
+        global_timeouts = Timeouts
+    } = BiddingResult,
 
-    #{ completed => maps:from_list(CompletedList),
-       individual_timeouts => IndividualTimeouts,
-       global_timeouts => Timeouts }.
+    #{
+        completed => maps:from_list(CompletedList),
+        individual_timeouts => IndividualTimeouts,
+        global_timeouts => Timeouts
+    }.
 
-
--spec old_style_result(BiddingResult) -> OldStyleResult
-        when BiddingResult :: tf_bidding_result(),
-             OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
-             Completed :: [{TaskId, TaskResult}],
-             IndividualTimeouts :: [TaskId],
-             Timeouts :: [TaskId],
-             TaskId :: term(),
-             TaskResult :: term().
+-spec old_style_result(BiddingResult) -> OldStyleResult when
+    BiddingResult :: tf_bidding_result(),
+    OldStyleResult :: {Completed, IndividualTimeouts, Timeouts},
+    Completed :: [{TaskId, TaskResult}],
+    IndividualTimeouts :: [TaskId],
+    Timeouts :: [TaskId],
+    TaskId :: term(),
+    TaskResult :: term().
 
 old_style_result(BiddingResult) ->
     #tf_bidding_result{
-       completed = CompletedList,
-       individual_timeouts = IndividualTimeouts,
-       global_timeouts = Timeouts } = BiddingResult,
+        completed = CompletedList,
+        individual_timeouts = IndividualTimeouts,
+        global_timeouts = Timeouts
+    } = BiddingResult,
 
     {CompletedList, IndividualTimeouts, Timeouts}.

@@ -29,14 +29,18 @@ start_link() ->
 
 -spec init([]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec(), ...]}}.
 init([]) ->
-    SupFlags = #{strategy => simple_one_for_one,
-                 intensity => 60,
-                 period => 3600},
-    ChildSpec = #{id => masters,
-                  start => {tf_minion_serv, start_link, []},
-                  restart => transient,
-                  shutdown => 5000,
-                  type => worker},
+    SupFlags = #{
+        strategy => simple_one_for_one,
+        intensity => 60,
+        period => 3600
+    },
+    ChildSpec = #{
+        id => masters,
+        start => {tf_minion_serv, start_link, []},
+        restart => transient,
+        shutdown => 5000,
+        type => worker
+    },
     {ok, {SupFlags, [ChildSpec]}}.
 
 %%%===================================================================

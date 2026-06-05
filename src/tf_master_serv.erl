@@ -11,29 +11,31 @@
 -export([start_link/2]).
 
 %% gen_server callbacks
--export([init/1,
-         handle_call/3,
-         handle_cast/2,
-         handle_info/2,
-         terminate/2,
-         code_change/3]).
+-export([
+    init/1,
+    handle_call/3,
+    handle_cast/2,
+    handle_info/2,
+    terminate/2,
+    code_change/3
+]).
 
 -ignore_xref([{start_link, 2}]).
 
 -include("taskforce.hrl").
 
--type exec_state() :: idle | {running, Bidder::any()}.
+-type exec_state() :: idle | {running, Bidder :: any()}.
 
 -record(master_state, {
-        patron_pid :: pid(),
-        patron_monitor :: reference(),
-        max_minion_count :: pos_integer(),
-        exec_state = 'idle' :: exec_state(),
-        tasks = [] :: [tf_task()],
-        consumed_task_ids = [] :: [any()],
-        completed = [] :: [any()],
-        timedout_task_ids = [] :: [any()]
-        }).
+    patron_pid :: pid(),
+    patron_monitor :: reference(),
+    max_minion_count :: pos_integer(),
+    exec_state = 'idle' :: exec_state(),
+    tasks = [] :: [tf_task()],
+    consumed_task_ids = [] :: [any()],
+    completed = [] :: [any()],
+    timedout_task_ids = [] :: [any()]
+}).
 -type state() :: #master_state{}.
 
 %%%===================================================================
@@ -50,26 +52,34 @@ start_link(PatronPid, MaxMinionCount) ->
 
 -spec init([pid() | pos_integer(), ...]) -> {ok, state()}.
 init([PatronPid, MaxMinionCount]) ->
-    State0 = #master_state{patron_pid = PatronPid,
-                           patron_monitor = monitor(process, PatronPid),
-                           max_minion_count = MaxMinionCount},
+    State0 = #master_state{
+        patron_pid = PatronPid,
+        patron_monitor = monitor(process, PatronPid),
+        max_minion_count = MaxMinionCount
+    },
     {ok, State0}.
 
 -spec handle_call(term(), gen_server:from(), state()) ->
     {reply, {ok, tf_task()} | {error, no_more_tasks}, state()}
     | {noreply, state()}
     | {stop, normal, state()}.
-handle_call({do_my_bidding, #tf_bidding{}=Bidding}, Bidder, #master_state{ exec_state=idle }=State) ->
-    #tf_bidding{tasks=Tasks,
-                timeout=BiddingTimeout }=Bidding,
+handle_call(
+    {do_my_bidding, #tf_bidding{} = Bidding}, Bidder, #master_state{exec_state = idle} = State
+) ->
+    #tf_bidding{
+        tasks = Tasks,
+        timeout = BiddingTimeout
+    } = Bidding,
 
     MaxMinionCount = State#master_state.max_minion_count,
     MinionCount = min(length(Tasks), MaxMinionCount),
     ok = spawn_minions(MinionCount),
 
     NewExecState = {running, Bidder},
-    NewState = State#master_state{exec_state = NewExecState,
-                                  tasks = Tasks},
+    NewState = State#master_state{
+        exec_state = NewExecState,
+        tasks = Tasks
+    },
     case length(Tasks) == 0 of
         true ->
             {stop, normal, NewState};
@@ -77,22 +87,28 @@ handle_call({do_my_bidding, #tf_bidding{}=Bidding}, Bidder, #master_state{ exec_
             erlang:send_after(BiddingTimeout, self(), bidding_timeout),
             {noreply, NewState}
     end;
-
-
-handle_call(consume_task, {_MinionPid, _},
-            #master_state{ exec_state={running, _}, tasks=[Task | Remaining] }=State)
-->
-    NewState = State#master_state{tasks = Remaining,
-                                  consumed_task_ids = [Task#tf_task.id
-                                                       | State#master_state.consumed_task_ids]},
+handle_call(
+    consume_task,
+    {_MinionPid, _},
+    #master_state{exec_state = {running, _}, tasks = [Task | Remaining]} = State
+) ->
+    NewState = State#master_state{
+        tasks = Remaining,
+        consumed_task_ids = [
+            Task#tf_task.id
+            | State#master_state.consumed_task_ids
+        ]
+    },
     {reply, {ok, Task}, NewState};
-
-handle_call(consume_task, {_MinionPid, _}, #master_state{ exec_state={running, _}, tasks=[] }=State) ->
+handle_call(
+    consume_task, {_MinionPid, _}, #master_state{exec_state = {running, _}, tasks = []} = State
+) ->
     {reply, {error, no_more_tasks}, State}.
 
-
 -spec handle_cast(term(), state()) -> {noreply, state()} | {stop, normal, state()}.
-handle_cast({{task_completed, TaskId}, TaskResult}, #master_state{ exec_state={running, _} }=State) ->
+handle_cast(
+    {{task_completed, TaskId}, TaskResult}, #master_state{exec_state = {running, _}} = State
+) ->
     PrevCompleted = State#master_state.completed,
     NewCompleted = [{TaskId, TaskResult} | PrevCompleted],
     NewState = State#master_state{completed = NewCompleted},
@@ -106,8 +122,7 @@ handle_cast({{task_completed, TaskId}, TaskResult}, #master_state{ exec_state={r
         _ ->
             {noreply, NewState}
     end;
-
-handle_cast({{task_timeout, TaskId}}, #master_state{ exec_state={running, _} }=State) ->
+handle_cast({{task_timeout, TaskId}}, #master_state{exec_state = {running, _}} = State) ->
     PrevTimeouts = State#master_state.timedout_task_ids,
     NewTimeouts = [TaskId | PrevTimeouts],
     NewState = State#master_state{timedout_task_ids = NewTimeouts},
@@ -124,29 +139,33 @@ handle_cast({{task_timeout, TaskId}}, #master_state{ exec_state={running, _} }=S
 
 -spec handle_info(term(), state()) ->
     {stop, {shutdown, patron_death | bidding_timeout}, state()}.
-handle_info({'DOWN', Reference, process, _Pid, _Reason}, #master_state{ patron_monitor=Reference }=State) ->
+handle_info(
+    {'DOWN', Reference, process, _Pid, _Reason}, #master_state{patron_monitor = Reference} = State
+) ->
     {stop, {shutdown, patron_death}, State};
-
-handle_info(bidding_timeout, #master_state{ exec_state={running, _} }=State) ->
+handle_info(bidding_timeout, #master_state{exec_state = {running, _}} = State) ->
     {stop, {shutdown, bidding_timeout}, State}.
 
 -spec terminate(term(), state()) -> ok.
-terminate(_Reason, #master_state{ exec_state=idle }=_State) ->
+terminate(_Reason, #master_state{exec_state = idle} = _State) ->
     ok;
-
-terminate(_Reason, #master_state{ exec_state={running, Bidder} }=State) ->
-    #master_state{tasks=NeverConsumed,
-                  consumed_task_ids=ConsumedIds,
-                  completed=Completed}=State,
+terminate(_Reason, #master_state{exec_state = {running, Bidder}} = State) ->
+    #master_state{
+        tasks = NeverConsumed,
+        consumed_task_ids = ConsumedIds,
+        completed = Completed
+    } = State,
 
     NeverConsumedIds = [Task#tf_task.id || Task <- NeverConsumed],
     CompletedIds = [TaskId || {TaskId, _} <- Completed],
     IndividualTimeouts = (ConsumedIds -- CompletedIds),
     GlobalTimeouts = NeverConsumedIds,
 
-    BiddingResults = #tf_bidding_result{completed = Completed,
-                                        individual_timeouts = IndividualTimeouts,
-                                        global_timeouts = GlobalTimeouts},
+    BiddingResults = #tf_bidding_result{
+        completed = Completed,
+        individual_timeouts = IndividualTimeouts,
+        global_timeouts = GlobalTimeouts
+    },
     gen_server:reply(Bidder, {ok, BiddingResults}),
     ok.
 
@@ -161,8 +180,8 @@ code_change(_OldVsn, State, _Extra) ->
 spawn_minions(MaxMinionCount) ->
     Self = self(),
     lists:foreach(
-        fun (_Id) ->
-                {ok, _MinionPid} = supervisor:start_child(tf_minion_sup, [Self])
+        fun(_Id) ->
+            {ok, _MinionPid} = supervisor:start_child(tf_minion_sup, [Self])
         end,
         lists:seq(1, MaxMinionCount)
     ).
