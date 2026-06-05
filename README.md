@@ -1,17 +1,13 @@
+# taskforce
 
-
-# taskforce #
-
-**This library is not under active maintenance; if you'd like to perform
-maintenance yourself, feel free to open an issue requesting access.**
-
-Copyright (c) 2015-2022 Guilherme Andrade
-
-__Version:__ 1.2.3
-
-__Authors:__ Guilherme Andrade ([`g@gandrade.net`](mailto:g@gandrade.net)).
+[![Hex.pm Version](https://img.shields.io/hexpm/v/taskforce.svg?style=flat)](https://hex.pm/packages/taskforce)
+[![CI](https://github.com/g-andrade/taskforce/actions/workflows/ci.yml/badge.svg)](https://github.com/g-andrade/taskforce/actions/workflows/ci.yml)
+[![Erlang Versions](https://img.shields.io/badge/Supported%20Erlang%2FOTP-24%20to%2029-blue)](https://www.erlang.org)
 
 `taskforce` allows you to parallelise arbitrary tasks in a controlled way.
+
+It runs a group of independent tasks concurrently, bounding both the number of
+workers and how long execution may take, and gathers their results.
 
 
 ---------
