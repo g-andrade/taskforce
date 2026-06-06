@@ -37,6 +37,12 @@
 }).
 -type state() :: #master_state{}.
 
+-if(OTP_RELEASE =< 24).
+-type gen_server_from() :: {pid(), reference()}.
+-else.
+-type gen_server_from() :: gen_server:from().
+-endif.
+
 %%%===================================================================
 %%% API functions
 %%%===================================================================
@@ -58,7 +64,7 @@ init([PatronPid, MaxMinionCount]) ->
     },
     {ok, State0}.
 
--spec handle_call(term(), gen_server:from(), state()) ->
+-spec handle_call(term(), gen_server_from(), state()) ->
     {reply, {ok, tf_task()} | {error, no_more_tasks}, state()}
     | {noreply, state()}
     | {stop, normal, state()}.

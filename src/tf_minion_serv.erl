@@ -40,6 +40,12 @@
 }).
 -type state() :: #minion_state{}.
 
+-if(OTP_RELEASE =< 24).
+-type gen_server_from() :: {pid(), reference()}.
+-else.
+-type gen_server_from() :: gen_server:from().
+-endif.
+
 %%%===================================================================
 %%% API functions
 %%%===================================================================
@@ -61,7 +67,7 @@ init([MasterPid]) ->
     gen_server:cast(self(), get_task),
     {ok, State0}.
 
--spec handle_call(term(), gen_server:from(), state()) -> {noreply, state()}.
+-spec handle_call(term(), gen_server_from(), state()) -> {noreply, state()}.
 handle_call(_Request, _From, #minion_state{} = State) ->
     {noreply, State}.
 
