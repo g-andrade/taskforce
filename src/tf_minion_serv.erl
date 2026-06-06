@@ -40,7 +40,7 @@
 }).
 -type state() :: #minion_state{}.
 
--if(OTP_RELEASE =< 24).
+-if(?OTP_RELEASE =< 24).
 -type gen_server_from() :: {pid(), reference()}.
 -else.
 -type gen_server_from() :: gen_server:from().
