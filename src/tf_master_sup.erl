@@ -1,4 +1,3 @@
-% vim: set expandtab softtabstop=4 shiftwidth=4:
 -module(tf_master_sup).
 
 -ifdef(E48).

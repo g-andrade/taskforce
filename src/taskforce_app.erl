@@ -1,4 +1,3 @@
-% vim: set expandtab softtabstop=4 shiftwidth=4:
 -module(taskforce_app).
 
 -ifdef(E48).

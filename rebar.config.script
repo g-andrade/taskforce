@@ -1,4 +1,4 @@
-% vim: set ft=erlang:
+% -*- mode: erlang; -*- vim: set ft=erlang:
 begin
     TakeOutProjPlugin =
         fun(Name, Config) ->

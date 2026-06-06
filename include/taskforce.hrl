@@ -1,5 +1,3 @@
-% vim: set expandtab softtabstop=4 shiftwidth=4:
-
 -type tf_task_id() :: any().
 -type tf_fun_ref() :: fun().
 -type tf_fun_args() :: [any()].
