@@ -13,7 +13,7 @@ workers and how long execution may take, and gathers their results.
 ---------
 
 
-### <a name="Creating_tasks">Creating tasks</a> ###
+### Creating tasks
 
 
 ```erlang
@@ -25,7 +25,7 @@ Tasks = #{ some_task => taskforce:task(fun work/0, Args, #{ timeout => 2000 }),
 ```
 
 
-### <a name="Executing_tasks">Executing tasks</a> ###
+### Executing tasks
 
 
 ```erlang
@@ -38,7 +38,7 @@ OtherTaskResult = maps:get(other_task, Completed).
 ```
 
 
-### <a name="Finely_tuning_execution">Finely tuning execution</a> ###
+### Finely tuning execution
 
 
 ```erlang
@@ -50,7 +50,7 @@ ExecutionOptions = #{ max_workers => 8, timeout => 5000 },
 ```
 
 
-### <a name="Individual_task_timeouts">Individual task timeouts</a> ###
+### Individual task timeouts
 
 
 ```erlang
@@ -64,7 +64,7 @@ ExecutionOptions = #{ max_workers => 8, timeout => 5000 },
 ```
 
 
-### <a name="Global_execution_timeouts">Global execution timeouts</a> ###
+### Global execution timeouts
 
 
 ```erlang
@@ -78,7 +78,7 @@ ExecutionOptions = #{ max_workers => 8, timeout => 5000 },
 ```
 
 
-### <a name="Full_example">Full example</a> ###
+### Full example
 
 
 ```erlang
