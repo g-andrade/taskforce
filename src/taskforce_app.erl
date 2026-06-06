@@ -16,7 +16,7 @@
 %%% Application callbacks
 %%%===================================================================
 
--spec start(application:start_type(), term()) -> supervisor:startlink_ret().
+-spec start(application:start_type(), term()) -> {'error', _} | {'ok', pid()}.
 start(_StartType, _StartArgs) ->
     taskforce_sup:start_link().
 
